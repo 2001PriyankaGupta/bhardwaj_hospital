@@ -4,32 +4,37 @@ namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
+use App\Models\Appointment;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
     public function index(Request $request)
     {
+        $user = Auth::user();
         $payments = Payment::with(['appointment', 'patient'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return view('admin.payments.index', compact('payments'));
+        return view($user->user_type.'.payments.index', compact('payments'));
     }
 
     public function show($id)
     {
+         $user = Auth::user();
         $payment = Payment::with(['appointment.doctor', 'patient'])->find($id);
         if (! $payment) {
             return response()->json(['success' => false, 'message' => 'Payment not found'], 404);
         }
 
-        $html = view('admin.payments.partials.details', compact('payment'))->render();
+        $html = view($user->user_type.'.payments.partials.details', compact('payment'))->render();
         return response()->json(['success' => true, 'html' => $html]);
     }
 
     public function markAsPaid(Request $request, $id)
     {
+         $user = Auth::user();
         $payment = Payment::find($id);
         if (! $payment) {
             return response()->json(['success' => false, 'message' => 'Payment not found'], 404);

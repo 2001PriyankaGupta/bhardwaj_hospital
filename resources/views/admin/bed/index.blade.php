@@ -151,7 +151,7 @@
                             <tr>
                                 <td>{{ $key + 1 }}</td>
                                 <td>{{ $bed->bed_number }}</td>
-                                <td>{{ $bed->room->room_number }}</td>
+                                <td>{{ $bed->room->room_number ?? 'N/A' }}</td>
                                 <td>{{ $bed->room->ward_name }}</td>
 
                                 <td>

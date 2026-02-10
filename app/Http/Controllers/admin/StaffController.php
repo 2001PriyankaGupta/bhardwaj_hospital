@@ -10,6 +10,8 @@ use App\Models\ActivityLog;
 use App\Models\Schedule;
 use App\Models\Medication;
 use App\Models\Notification;
+use App\Models\Appointment;
+use App\Models\EmergencyTriage;
 use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -23,18 +25,29 @@ class StaffController extends Controller
 {
 
 
-  public function dashboard()
+   public function dashboard()
     {
         $staff = Auth::user();
-        
+
+        // Fetch today's appointments with related patient/resource/department
+        $todayAppointmentsList = Appointment::with(['patient', 'resource', 'department'])
+            ->whereDate('appointment_date', today())
+            ->orderBy('start_time')
+            ->get();
+
+        $appointmentCount = $todayAppointmentsList->count();
+
+        $emergencyCases = EmergencyTriage::whereDate('created_at', today())->count();
+
         $dashboardData = [
             'staff' => $staff,
-            'myPatients' => 15,
-            'todayAppointments' => 8,
+            'myPatients' => 15, // keep existing placeholder; adjust if you have a patients relation
+            'todayAppointments' => $appointmentCount,
+            'todayAppointmentsList' => $todayAppointmentsList,
             'pendingMedications' => 5,
-            'emergencyCases' => 2
+            'emergencyCases' => $emergencyCases,
         ];
-        
+
         return view('staff.index', $dashboardData);
     }
     

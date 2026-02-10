@@ -31,12 +31,12 @@ class AppointmentController extends Controller
 
     public function generateToken(Request $request)
     {
-        $appID = env('AGORA_APP_ID');
-        $appCertificate = env('AGORA_APP_CERTIFICATE');
+        $appID = config('services.agora.key');
+        $appCertificate = config('services.agora.secret');
 
         $channelName = $request->channel_name; // frontend se ayega
         $uid = $request->uid ?? 0; // 0 ka matlab auto uid
-        $role = RtcTokenBuilder::ROLE_PUBLISHER;
+        $role = RtcTokenBuilder::RolePublisher;
 
         $expireTimeInSeconds = 3600; // 1 hour
         $currentTimestamp = now()->timestamp;

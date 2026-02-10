@@ -2,6 +2,7 @@
 
 @section('title', 'Banner Management')
 
+
 <link href="{{ URL::asset('build/libs/datatables.net-bs4/css/dataTables.bootstrap4.min.css') }}" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -64,7 +65,7 @@
                                             <td>{{ $banner->id }}</td>
                                             <td>
                                                 @if ($banner->image)
-                                                    <img src="{{ Storage::url($banner->image) }}" alt="{{ $banner->title }}"
+                                                    <img src="{{ asset('storage/'.$banner->image) }}" alt="{{ $banner->title }}"
                                                         style="width: 80px; height: 50px; object-fit: cover;">
                                                 @else
                                                     <span class="text-muted">No Image</span>

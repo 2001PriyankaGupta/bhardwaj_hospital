@@ -84,7 +84,7 @@
                                     </div>
                                     <div class="card-body text-center">
                                         @if ($banner->image)
-                                            <img src="{{ Storage::url($banner->image) }}" alt="{{ $banner->title }}"
+                                            <img src="{{ asset('storage/'.$banner->image) }}" alt="{{ $banner->title }}"
                                                 style="max-width: 100%; max-height: 300px;">
                                         @else
                                             <p class="text-muted">No Image</p>

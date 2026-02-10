@@ -64,7 +64,7 @@
                                             <td>{{ $banner->id }}</td>
                                             <td>
                                                 @if ($banner->image)
-                                                    <img src="{{ Storage::url($banner->image) }}" alt="{{ $banner->title }}"
+                                                    <img src="{{ asset('storage/'.$banner->image) }}" alt="{{ $banner->title }}"
                                                         style="width: 80px; height: 50px; object-fit: cover;">
                                                 @else
                                                     <span class="text-muted">No Image</span>

@@ -122,7 +122,7 @@
                                         </small>
                                         <div class="mt-2">
                                             @if ($banner->image)
-                                                <img src="{{ Storage::url($banner->image) }}" alt="Current Image"
+                                                <img src="{{ asset('storage/'.$banner->image) }}" alt="Current Image"
                                                     style="max-width: 100%; max-height: 200px; margin-top: 10px;">
                                                 <p class="text-muted small mt-1">Current Image</p>
                                             @endif

@@ -1,6 +1,526 @@
 @extends('doctor.layouts.master')
 
+<!-- Add Font Awesome for icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    :root {
+        --primary-color: #3a86ff;
+        --danger-color: #ff6b6b;
+        --success-color: #4ecdc4;
+        --warning-color: #ffd166;
+        --dark-color: #2d3436;
+        --light-color: #f8f9fa;
+        --border-color: #e0e0e0;
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+        background-color: #f5f7fa;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .video-call-container {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 20px;
+        position: relative;
+    }
+
+    .call-header {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+
+
+    .call-info h2 {
+        color: var(--dark-color);
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    .call-info h2 i {
+        color: var(--primary-color);
+        margin-right: 10px;
+    }
+
+    .patient-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .patient-avatar {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary-color), #6c63ff);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+    }
+
+    .patient-details h3 {
+        margin: 0;
+        color: var(--dark-color);
+        font-weight: 600;
+    }
+
+    .call-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 5px;
+    }
+
+    .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .status-dot.connecting {
+        background-color: var(--warning-color);
+        animation: pulse 1.5s infinite;
+    }
+
+    .status-dot.connected {
+        background-color: var(--success-color);
+    }
+
+    @keyframes pulse {
+        0% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+
+    .appointment-details {
+        display: flex;
+        gap: 15px;
+        margin-top: 8px;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .appointment-details i {
+        margin-right: 5px;
+    }
+
+    .call-timer {
+        background: var(--light-color);
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+
+    .timer-display {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--dark-color);
+    }
+
+    .timer-display i {
+        color: var(--primary-color);
+    }
+
+    /* Video Streams */
+    .video-streams-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .video-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .video-header {
+        background: var(--dark-color);
+        color: white;
+        padding: 12px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .video-header h4 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .video-header h4 i {
+        margin-right: 8px;
+    }
+
+    .video-indicators {
+        display: flex;
+        gap: 10px;
+    }
+
+    .indicator {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+    }
+
+    .mic-on {
+        background-color: rgba(78, 205, 196, 0.2);
+        color: var(--success-color);
+    }
+
+    .video-on {
+        background-color: rgba(58, 134, 255, 0.2);
+        color: var(--primary-color);
+    }
+
+    .video-display {
+        width: 100%;
+        height: 400px;
+        background: #000;
+        position: relative;
+    }
+
+    .no-video-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #999;
+        font-size: 18px;
+    }
+
+    .patient-sidebar {
+        display: none;
+    }
+
+    .no-video-placeholder i {
+        font-size: 80px;
+        margin-bottom: 15px;
+        color: #555;
+    }
+
+    .video-label {
+        padding: 10px 20px;
+        background: var(--light-color);
+        border-top: 1px solid var(--border-color);
+        font-weight: 500;
+        color: var(--dark-color);
+    }
+
+    /* Controls Panel */
+    .controls-panel {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .control-group {
+        display: flex;
+        gap: 10px;
+    }
+
+    .control-btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .control-btn i {
+        font-size: 18px;
+    }
+
+    .audio-control,
+    .video-control {
+        background-color: var(--light-color);
+        color: var(--dark-color);
+        border: 1px solid var(--border-color);
+    }
+
+    .audio-control:hover,
+    .video-control:hover {
+        background-color: #e9ecef;
+        transform: translateY(-2px);
+    }
+
+    .prescription-btn {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .prescription-btn:hover {
+        background-color: #2a75ff;
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .notes-btn,
+    .record-btn {
+        background-color: var(--light-color);
+        color: var(--dark-color);
+        border: 1px solid var(--border-color);
+    }
+
+    .notes-btn:hover,
+    .record-btn:hover {
+        background-color: #e9ecef;
+    }
+
+    .end-call-btn {
+        background-color: var(--danger-color);
+        color: white;
+        padding: 12px 30px;
+    }
+
+    .end-call-btn:hover {
+        background-color: #ff5252;
+        transform: translateY(-2px);
+    }
+
+    /* Patient Sidebar */
+    .patient-sidebar {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        position: absolute;
+        right: 20px;
+        top: 180px;
+        width: 300px;
+    }
+
+    .sidebar-header {
+        background: var(--dark-color);
+        color: white;
+        padding: 15px 20px;
+    }
+
+    .sidebar-header h5 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .sidebar-header h5 i {
+        margin-right: 8px;
+        color: var(--primary-color);
+    }
+
+    .sidebar-content {
+        padding: 20px;
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    .info-section {
+        margin-bottom: 25px;
+    }
+
+    .info-section h6 {
+        color: var(--dark-color);
+        margin-bottom: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        padding-bottom: 8px;
+        border-bottom: 1px dashed #eee;
+    }
+
+    .info-label {
+        font-weight: 500;
+        color: #666;
+    }
+
+    .info-value {
+        font-weight: 500;
+        color: var(--dark-color);
+    }
+
+    .medical-history p {
+        font-size: 14px;
+        line-height: 1.5;
+        color: #666;
+    }
+
+    .btn-view-history {
+        background: none;
+        border: none;
+        color: var(--primary-color);
+        padding: 5px 0;
+        font-size: 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 5px;
+    }
+
+    .btn-view-history:hover {
+        text-decoration: underline;
+    }
+
+    .quick-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .quick-action-btn {
+        padding: 10px 15px;
+        background: var(--light-color);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        text-align: left;
+        font-size: 14px;
+        color: var(--dark-color);
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .quick-action-btn:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+    }
+
+    /* Modal Styles */
+    .modal-header {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .modal-title i {
+        margin-right: 10px;
+    }
+
+    .medication-row {
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        align-items: center;
+    }
+
+    .control-btn {
+        transition: all 0.3s ease;
+    }
+
+    .control-btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .control-btn.muted {
+        background-color: rgba(220, 53, 69, 0.1);
+        border-color: #dc3545;
+    }
+
+    @media (max-width: 1400px) {
+        .video-streams-container {
+            grid-template-columns: 1fr;
+        }
+
+        .patient-sidebar {
+            position: static;
+            width: 100%;
+            margin-top: 20px;
+        }
+    }
+
+    @media (max-width: 992px) {
+        .controls-panel {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .control-group {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .call-header {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+
+        .patient-info {
+            justify-content: center;
+        }
+
+        .appointment-details {
+            flex-direction: column;
+            gap: 5px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .control-btn {
+            padding: 10px 15px;
+            font-size: 14px;
+        }
+
+        .control-btn span {
+            display: none;
+        }
+
+        .video-display {
+            height: 300px;
+        }
+    }
+</style>
 @section('content')
     <div class="video-call-container">
         <!-- Header -->
@@ -79,16 +599,14 @@
             <!-- Left Controls -->
             <div class="control-group left-controls">
                 <button id="muteAudio" class="control-btn audio-control" title="Mute/Unmute Microphone">
-                    <i class="fas fa-microphone"></i>
-                    <span>Mute Mic</span>
+                    <i id="audioIcon" class="fas fa-microphone"></i>
+                    <span id="audioText">Mute Mic</span>
                 </button>
 
                 <button id="muteVideo" class="control-btn video-control" title="Start/Stop Video">
-                    <i class="fas fa-video"></i>
-                    <span>Stop Video</span>
+                    <i id="videoIcon" class="fas fa-video"></i>
+                    <span id="videoText">Stop Video</span>
                 </button>
-
-
             </div>
 
             <!-- Center Controls -->
@@ -258,517 +776,11 @@
             </div>
         </div>
     </div>
+@endsection
 
+@section('scripts')
     <!-- Agora SDK -->
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
-
-    <!-- Add Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <style>
-        :root {
-            --primary-color: #3a86ff;
-            --danger-color: #ff6b6b;
-            --success-color: #4ecdc4;
-            --warning-color: #ffd166;
-            --dark-color: #2d3436;
-            --light-color: #f8f9fa;
-            --border-color: #e0e0e0;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        body {
-            background-color: #f5f7fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .video-call-container {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 20px;
-            position: relative;
-        }
-
-        .call-header {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: var(--shadow);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .call-info h2 {
-            color: var(--dark-color);
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .call-info h2 i {
-            color: var(--primary-color);
-            margin-right: 10px;
-        }
-
-        .patient-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .patient-avatar {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--primary-color), #6c63ff);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-        }
-
-        .patient-details h3 {
-            margin: 0;
-            color: var(--dark-color);
-            font-weight: 600;
-        }
-
-        .call-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 5px;
-        }
-
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-
-        .status-dot.connecting {
-            background-color: var(--warning-color);
-            animation: pulse 1.5s infinite;
-        }
-
-        .status-dot.connected {
-            background-color: var(--success-color);
-        }
-
-        @keyframes pulse {
-            0% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.5;
-            }
-
-            100% {
-                opacity: 1;
-            }
-        }
-
-        .appointment-details {
-            display: flex;
-            gap: 15px;
-            margin-top: 8px;
-            font-size: 14px;
-            color: #666;
-        }
-
-        .appointment-details i {
-            margin-right: 5px;
-        }
-
-        .call-timer {
-            background: var(--light-color);
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-
-        .timer-display {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 24px;
-            font-weight: 600;
-            color: var(--dark-color);
-        }
-
-        .timer-display i {
-            color: var(--primary-color);
-        }
-
-        /* Video Streams */
-        .video-streams-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .video-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .video-header {
-            background: var(--dark-color);
-            color: white;
-            padding: 12px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .video-header h4 {
-            margin: 0;
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .video-header h4 i {
-            margin-right: 8px;
-        }
-
-        .video-indicators {
-            display: flex;
-            gap: 10px;
-        }
-
-        .indicator {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-        }
-
-        .mic-on {
-            background-color: rgba(78, 205, 196, 0.2);
-            color: var(--success-color);
-        }
-
-        .video-on {
-            background-color: rgba(58, 134, 255, 0.2);
-            color: var(--primary-color);
-        }
-
-        .video-display {
-            width: 100%;
-            height: 400px;
-            background: #000;
-            position: relative;
-        }
-
-        .no-video-placeholder {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #999;
-            font-size: 18px;
-        }
-
-        .patient-sidebar {
-            display: none;
-        }
-
-        .no-video-placeholder i {
-            font-size: 80px;
-            margin-bottom: 15px;
-            color: #555;
-        }
-
-        .video-label {
-            padding: 10px 20px;
-            background: var(--light-color);
-            border-top: 1px solid var(--border-color);
-            font-weight: 500;
-            color: var(--dark-color);
-        }
-
-        /* Controls Panel */
-        .controls-panel {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: var(--shadow);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .control-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .control-btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .control-btn i {
-            font-size: 18px;
-        }
-
-        .audio-control,
-        .video-control {
-            background-color: var(--light-color);
-            color: var(--dark-color);
-            border: 1px solid var(--border-color);
-        }
-
-        .audio-control:hover,
-        .video-control:hover {
-            background-color: #e9ecef;
-            transform: translateY(-2px);
-        }
-
-        .prescription-btn {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .prescription-btn:hover {
-            background-color: #2a75ff;
-            transform: translateY(-2px);
-            color: white;
-        }
-
-        .notes-btn,
-        .record-btn {
-            background-color: var(--light-color);
-            color: var(--dark-color);
-            border: 1px solid var(--border-color);
-        }
-
-        .notes-btn:hover,
-        .record-btn:hover {
-            background-color: #e9ecef;
-        }
-
-        .end-call-btn {
-            background-color: var(--danger-color);
-            color: white;
-            padding: 12px 30px;
-        }
-
-        .end-call-btn:hover {
-            background-color: #ff5252;
-            transform: translateY(-2px);
-        }
-
-        /* Patient Sidebar */
-        .patient-sidebar {
-            background: white;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            position: absolute;
-            right: 20px;
-            top: 180px;
-            width: 300px;
-        }
-
-        .sidebar-header {
-            background: var(--dark-color);
-            color: white;
-            padding: 15px 20px;
-        }
-
-        .sidebar-header h5 {
-            margin: 0;
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .sidebar-header h5 i {
-            margin-right: 8px;
-            color: var(--primary-color);
-        }
-
-        .sidebar-content {
-            padding: 20px;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .info-section {
-            margin-bottom: 25px;
-        }
-
-        .info-section h6 {
-            color: var(--dark-color);
-            margin-bottom: 12px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .info-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            padding-bottom: 8px;
-            border-bottom: 1px dashed #eee;
-        }
-
-        .info-label {
-            font-weight: 500;
-            color: #666;
-        }
-
-        .info-value {
-            font-weight: 500;
-            color: var(--dark-color);
-        }
-
-        .medical-history p {
-            font-size: 14px;
-            line-height: 1.5;
-            color: #666;
-        }
-
-        .btn-view-history {
-            background: none;
-            border: none;
-            color: var(--primary-color);
-            padding: 5px 0;
-            font-size: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            margin-top: 5px;
-        }
-
-        .btn-view-history:hover {
-            text-decoration: underline;
-        }
-
-        .quick-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .quick-action-btn {
-            padding: 10px 15px;
-            background: var(--light-color);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            text-align: left;
-            font-size: 14px;
-            color: var(--dark-color);
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .quick-action-btn:hover {
-            background: #e9ecef;
-            transform: translateX(5px);
-        }
-
-        /* Modal Styles */
-        .modal-header {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .modal-title i {
-            margin-right: 10px;
-        }
-
-        .medication-row {
-            background-color: #f8f9fa;
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            align-items: center;
-        }
-
-        @media (max-width: 1400px) {
-            .video-streams-container {
-                grid-template-columns: 1fr;
-            }
-
-            .patient-sidebar {
-                position: static;
-                width: 100%;
-                margin-top: 20px;
-            }
-        }
-
-        @media (max-width: 992px) {
-            .controls-panel {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .control-group {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .call-header {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-
-            .patient-info {
-                justify-content: center;
-            }
-
-            .appointment-details {
-                flex-direction: column;
-                gap: 5px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .control-btn {
-                padding: 10px 15px;
-                font-size: 14px;
-            }
-
-            .control-btn span {
-                display: none;
-            }
-
-            .video-display {
-                height: 300px;
-            }
-        }
-    </style>
-
     <script>
         let baseUrl = "{{ config('app.url') }}";
         const client = AgoraRTC.createClient({
@@ -858,16 +870,44 @@
             text.innerText = connected ? 'Connected' : 'Connecting...';
         }
 
-        // 🎤 Mic
+        // 🎤 Audio Mute/Unmute
         document.getElementById("muteAudio").onclick = () => {
             audioMuted = !audioMuted;
             localTracks[0].setEnabled(!audioMuted);
+
+            // Update icon and text
+            const audioIcon = document.getElementById("audioIcon");
+            const audioText = document.getElementById("audioText");
+
+            if (audioMuted) {
+                audioIcon.className = "fas fa-microphone-slash";
+                audioText.innerText = "Unmute Mic";
+                audioIcon.style.color = "#dc3545"; // Red color when muted
+            } else {
+                audioIcon.className = "fas fa-microphone";
+                audioText.innerText = "Mute Mic";
+                audioIcon.style.color = ""; // Reset to default
+            }
         };
 
-        // 🎥 Video
+        // 🎥 Video Mute/Unmute
         document.getElementById("muteVideo").onclick = () => {
             videoMuted = !videoMuted;
             localTracks[1].setEnabled(!videoMuted);
+
+            // Update icon and text
+            const videoIcon = document.getElementById("videoIcon");
+            const videoText = document.getElementById("videoText");
+
+            if (videoMuted) {
+                videoIcon.className = "fas fa-video-slash";
+                videoText.innerText = "Start Video";
+                videoIcon.style.color = "#dc3545"; // Red color when muted
+            } else {
+                videoIcon.className = "fas fa-video";
+                videoText.innerText = "Stop Video";
+                videoIcon.style.color = ""; // Reset to default
+            }
         };
 
         // ❌ End Call
@@ -885,7 +925,9 @@
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
-                    body: JSON.stringify({ call_id: callId })
+                    body: JSON.stringify({
+                        call_id: callId
+                    })
                 });
             } catch (e) {
                 console.error('Failed to call end endpoint', e);
@@ -897,7 +939,11 @@
                 track.stop();
                 track.close();
             });
-            try { await client.leave(); } catch (e) { console.error(e); }
+            try {
+                await client.leave();
+            } catch (e) {
+                console.error(e);
+            }
 
             window.location.href = "{{ route('doctor.appointments.index') }}";
         };

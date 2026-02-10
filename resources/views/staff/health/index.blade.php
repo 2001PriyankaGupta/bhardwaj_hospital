@@ -274,7 +274,7 @@
                             <!-- Thumbnail -->
                             <div class="thumbnail-container position-relative">
                                 @if ($tip->thumbnail_image)
-                                    <img src="{{ Storage::url($tip->thumbnail_image) }}" alt="{{ $tip->title }}"
+                                    <img src="{{ asset('storage/'.$tip->thumbnail_image) }}" alt="{{ $tip->title }}"
                                         class="thumbnail-img"
                                         onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'default-thumbnail\'><i class=\'fas fa-heartbeat\'></i></div>'">
                                 @else

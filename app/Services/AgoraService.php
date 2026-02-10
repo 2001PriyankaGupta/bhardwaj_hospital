@@ -59,7 +59,7 @@ class AgoraService
                 return $existing;
             }
 
-            $channelName = 'appointment_' . $appointmentId . '_' . time();
+            $channelName = 'appointment_' . $appointmentId;
             $token = $this->generateToken($channelName, $userId, self::ROLE_PUBLISHER);
 
             $videoCall = VideoCall::create([

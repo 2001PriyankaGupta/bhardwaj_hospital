@@ -162,7 +162,7 @@
                                         </div>
                                         @if ($doctor->profile_image)
                                             <div class="mt-2">
-                                                <img src="{{ Storage::url($doctor->profile_image) }}"
+                                                <img src="{{ asset('storage/'.$doctor->profile_image) }}"
                                                     alt="Current Profile" class="img-thumbnail" width="100">
                                                 <br>
                                                 <small>Current Profile Image</small>

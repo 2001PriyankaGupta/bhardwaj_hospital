@@ -40,6 +40,45 @@ class CommonDataController extends Controller
         }
     }
 
+
+    public function searchHealthTips(Request $request)
+    {
+        try {
+            $q = $request->query('q') ?? $request->query('search');
+
+            if (!$q) {
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Please provide search text',
+                    'data' => []
+                ], 200);
+            }
+
+            $healthTips = HealthTip::where('status', 1)
+                ->where(function ($query) use ($q) {
+                    $query->where('title', 'LIKE', "%{$q}%")
+                        ->orWhere('description', 'LIKE', "%{$q}%")
+                        ->orWhere('author', 'LIKE', "%{$q}%");
+                })
+                ->orderBy('id', 'desc')
+                ->get();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Health tips search results',
+                'count' => $healthTips->count(),
+                'data' => $healthTips
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to search health tips',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
    
     public function getEvents()
     {

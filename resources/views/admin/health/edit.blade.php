@@ -220,8 +220,8 @@
                                     <div class="preview-box">
                                         <div class="preview-title">Current Thumbnail:</div>
                                         <div class="current-thumbnail">
-                                            <img src="{{ Storage::url($healthTip->thumbnail_image) }}"
-                                                alt="Current Thumbnail" class="img-fluid rounded"
+                                            <img src="{{ asset('storage/'.$healthTip->thumbnail_image) }}" alt="Current Thumbnail"
+                                                class="img-fluid rounded"
                                                 onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'text-center py-3\'><i class=\'fas fa-image fa-2x text-muted mb-2\'></i><p class=\'text-muted mb-0\'>Thumbnail not found</p></div>'">
                                             <div class="mt-2">
                                                 <small class="text-muted d-block">

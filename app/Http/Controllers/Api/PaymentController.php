@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Payment;
 use App\Models\Appointment;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\Patient;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Http;
@@ -183,6 +184,7 @@ class PaymentController extends Controller
                     'currency' => $paymentData['currency'] ?? 'INR',
                     'payment_method' => $paymentData['method'] ?? 'card',
                     'status' => 'completed',
+                    'payment_date' => now(),
                     'transaction_id' => $request->payment_id,
                     'meta' => array_merge($request->all(), [
                         'razorpay_order_id' => $request->razorpay_order_id,
@@ -223,6 +225,14 @@ class PaymentController extends Controller
                 'invoice_date' => now()->toDateString(),
                 'due_date' => now()->toDateString(),
                 'notes' => 'Payment processed via Razorpay | Transaction: ' . $request->payment_id,
+            ]);
+
+             InvoiceItem::create([
+                'invoice_id' => $invoice->id,
+                'description' => 'Payment for appointment',
+                'amount' => $payment->amount,
+                'type' => 'appointment',
+                'service_date' => now()->toDateString()
             ]);
 
             Log::info('Invoice created or exists', ['invoice_id' => $invoice->id]);

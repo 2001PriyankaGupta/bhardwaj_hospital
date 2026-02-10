@@ -349,7 +349,7 @@
                 <div class="logo-icon">
                     <i class="fas fa-stethoscope"></i>
                 </div>
-                <div class="logo-text">MediCare Login</div>
+                <div class="logo-text"> LOGIN</div>
             </div>
 
 

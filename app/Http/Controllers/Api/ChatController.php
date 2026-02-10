@@ -282,19 +282,150 @@ class ChatController extends Controller
     }
 
     // Send message
-    public function sendMessage(Request $request, $conversationId)
+    // public function sendMessage(Request $request, $conversationId)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'message' => 'required_without:attachment|string',
+    //         'message_type' => 'required|in:text,image,file,appointment,prescription',
+    //         'attachments' => 'nullable|array',
+    //         'metadata' => 'nullable|array'
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Validation error',
+    //             'errors' => $validator->errors()
+    //         ], 422);
+    //     }
+
+    //     try {
+    //         $user = JWTAuth::parseToken()->authenticate();
+    //     } catch (TokenExpiredException | TokenInvalidException | JWTException $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Please login first to send message.'
+    //         ], 401);
+    //     }
+
+    //     $patient = Patient::where('user_id', $user->id)->firstOrFail();
+    //     $conversation = ChatConversation::where('conversation_id', $conversationId)
+    //         ->where('patient_id', $patient->id)
+    //         ->first();
+
+    //     if (!$conversation) {
+    //         return response()->json(['success' => false, 'message' => 'Conversation not found'], 404);
+    //     }
+
+    //     if ($conversation->status === 'closed') {
+    //         return response()->json(['success' => false, 'message' => 'Conversation is closed'], 403);
+    //     }
+
+    //     $message = ChatMessage::create([
+    //         'conversation_id' => $conversation->conversation_id,
+    //         'sender_type' => 'patient',
+    //         'sender_id' => $patient->id,
+    //         'message_type' => $request->message_type,
+    //         'message' => $request->message,
+    //         'attachments' => $request->attachments,
+    //         'metadata' => $request->metadata,
+    //         'delivered_at' => now()
+    //     ]);
+
+    //     // Update conversation last message time
+    //     $conversation->update(['last_message_at' => now()]);
+
+    //     // Broadcast event for real-time update
+    //     broadcast(new \App\Events\NewChatMessage($message));
+
+    //     // Send push to assigned agents (or fallback to staff/admins) and persist notifications; also notify patient confirmation
+    //     try {
+    //         $conversation = $conversation; // already available
+    //         $assignedUsers = $conversation->assignedTo()->get();
+
+    //         if ($assignedUsers->isEmpty()) {
+    //             // fallback: pick staff/admin users
+    //             $assignedUsers = \App\Models\User::whereHas('role', function ($q) {
+    //                 $q->whereIn('slug', ['admin', 'staff', 'doctor']);
+    //             })->whereNotNull('device_token')->get();
+    //         }
+
+    //         $deviceTokens = [];
+    //         foreach ($assignedUsers as $u) {
+    //             if ($u->device_token) {
+    //                 $deviceTokens[] = $u->device_token;
+    //             }
+
+    //             // Persist Notification per user (if not the message sender)
+    //             if ($u->id !== $message->sender_id) {
+    //                 \App\Models\Notification::create([
+    //                     'user_id' => $u->id,
+    //                     'type' => 'chat_message',
+    //                     'title' => 'New message from patient',
+    //                     'meta_data' => json_encode(['conversation_id' => $conversation->conversation_id, 'message_id' => $message->id]),
+    //                     'sender_id' => $message->sender_id,
+    //                 ]);
+    //             }
+    //         }
+
+    //         $fcm = $this->getFCM();
+    //         if ($fcm) {
+    //             if (!empty($deviceTokens)) {
+    //                 $fcm->sendNotification($deviceTokens, [
+    //                     'title' => 'New chat message',
+    //                     'body' => substr($message->message ?? 'You have a new message', 0, 120),
+    //                     'conversation_id' => $conversation->conversation_id,
+    //                     'message_id' => $message->id,
+    //                     'type' => 'chat'
+    //                 ]);
+    //             }
+
+    //             // Send confirmation notification back to the patient (if they have a device token)
+    //             $patientUser = \App\Models\User::find($patient->user_id);
+    //             if ($patientUser && !empty($patientUser->device_token)) {
+    //                 $fcm->sendNotification([$patientUser->device_token], [
+    //                     'title' => 'Message sent',
+    //                     'body' => substr($message->message ?? 'Your message was sent', 0, 120),
+    //                     'conversation_id' => $conversation->conversation_id,
+    //                     'message_id' => $message->id,
+    //                     'type' => 'chat_confirmation'
+    //                 ]);
+
+    //                 // Persist notification for patient
+    //                 \App\Models\Notification::create([
+    //                     'user_id' => $patient->id,
+    //                     'type' => 'chat_message',
+    //                     'title' => 'Message sent',
+    //                     'meta_data' => json_encode(['conversation_id' => $conversation->conversation_id, 'message_id' => $message->id]),
+    //                     'sender_id' => $message->sender_id,
+    //                 ]);
+    //             }
+    //         }
+    //     } catch (\Throwable $e) {
+    //         logger()->error('Chat API push error: ' . $e->getMessage());
+    //     }
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Message sent',
+    //         'data' => $message
+    //     ]);
+    // }
+
+     public function sendMessage(Request $request, $conversationId)
     {
+        // return $request->hasFile('attachment');
         $validator = Validator::make($request->all(), [
             'message' => 'required_without:attachment|string',
             'message_type' => 'required|in:text,image,file,appointment,prescription',
-            'attachments' => 'nullable|array',
+            'attachment' => 'nullable|file|max:10240', // 10MB per file
             'metadata' => 'nullable|array'
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation error',
+                'message' => $validator->errors()->first(),
                 'errors' => $validator->errors()
             ], 422);
         }
@@ -309,6 +440,7 @@ class ChatController extends Controller
         }
 
         $patient = Patient::where('user_id', $user->id)->firstOrFail();
+
         $conversation = ChatConversation::where('conversation_id', $conversationId)
             ->where('patient_id', $patient->id)
             ->first();
@@ -321,13 +453,57 @@ class ChatController extends Controller
             return response()->json(['success' => false, 'message' => 'Conversation is closed'], 403);
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | FILE / IMAGE UPLOAD
+        |--------------------------------------------------------------------------
+        */
+        $uploadedAttachments = [];
+
+        if ($request->hasFile('attachment')) {
+
+            $uploadPath = public_path('uploads/message');
+
+            // Create folder if not exists
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
+
+            
+                $file=$request->file('attachment');
+                $originalName = $file->getClientOriginalName();
+                $extension = $file->getClientOriginalExtension();
+                $fileName = uniqid() . '_' . time() . '.' . $extension;
+
+            
+
+                // Public accessible URL
+                $fileUrl = url('uploads/message/' . $fileName);
+
+                $uploadedAttachments[] = [
+                    'original_name' => $originalName,
+                    'file_name' => $fileName,
+                    'url' => $fileUrl,
+                    'mime_type' => $file->getClientMimeType(),
+                    'size' => $file->getSize(),
+                ];
+                // Move file to public/uploads/message
+                $file->move($uploadPath, $fileName);
+            
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | SAVE MESSAGE
+        |--------------------------------------------------------------------------
+        */
         $message = ChatMessage::create([
             'conversation_id' => $conversation->conversation_id,
             'sender_type' => 'patient',
             'sender_id' => $patient->id,
             'message_type' => $request->message_type,
             'message' => $request->message,
-            'attachments' => $request->attachments,
+            'attachments' => !empty($uploadedAttachments) ? $uploadedAttachments : null,
             'metadata' => $request->metadata,
             'delivered_at' => now()
         ]);
@@ -335,79 +511,64 @@ class ChatController extends Controller
         // Update conversation last message time
         $conversation->update(['last_message_at' => now()]);
 
-        // Broadcast event for real-time update
+        // Broadcast real-time event
         broadcast(new \App\Events\NewChatMessage($message));
 
-        // Send push to assigned agents (or fallback to staff/admins) and persist notifications; also notify patient confirmation
+        /*
+        |--------------------------------------------------------------------------
+        | PUSH NOTIFICATIONS
+        |--------------------------------------------------------------------------
+        */
         try {
-            $conversation = $conversation; // already available
             $assignedUsers = $conversation->assignedTo()->get();
 
             if ($assignedUsers->isEmpty()) {
-                // fallback: pick staff/admin users
                 $assignedUsers = \App\Models\User::whereHas('role', function ($q) {
                     $q->whereIn('slug', ['admin', 'staff', 'doctor']);
                 })->whereNotNull('device_token')->get();
             }
 
             $deviceTokens = [];
+
             foreach ($assignedUsers as $u) {
+
                 if ($u->device_token) {
                     $deviceTokens[] = $u->device_token;
                 }
 
-                // Persist Notification per user (if not the message sender)
                 if ($u->id !== $message->sender_id) {
                     \App\Models\Notification::create([
                         'user_id' => $u->id,
                         'type' => 'chat_message',
                         'title' => 'New message from patient',
-                        'meta_data' => json_encode(['conversation_id' => $conversation->conversation_id, 'message_id' => $message->id]),
+                        'meta_data' => json_encode([
+                            'conversation_id' => $conversation->conversation_id,
+                            'message_id' => $message->id
+                        ]),
                         'sender_id' => $message->sender_id,
                     ]);
                 }
             }
 
             $fcm = $this->getFCM();
-            if ($fcm) {
-                if (!empty($deviceTokens)) {
-                    $fcm->sendNotification($deviceTokens, [
-                        'title' => 'New chat message',
-                        'body' => substr($message->message ?? 'You have a new message', 0, 120),
-                        'conversation_id' => $conversation->conversation_id,
-                        'message_id' => $message->id,
-                        'type' => 'chat'
-                    ]);
-                }
 
-                // Send confirmation notification back to the patient (if they have a device token)
-                $patientUser = \App\Models\User::find($patient->user_id);
-                if ($patientUser && !empty($patientUser->device_token)) {
-                    $fcm->sendNotification([$patientUser->device_token], [
-                        'title' => 'Message sent',
-                        'body' => substr($message->message ?? 'Your message was sent', 0, 120),
-                        'conversation_id' => $conversation->conversation_id,
-                        'message_id' => $message->id,
-                        'type' => 'chat_confirmation'
-                    ]);
-
-                    // Persist notification for patient
-                    \App\Models\Notification::create([
-                        'user_id' => $patient->id,
-                        'type' => 'chat_message',
-                        'title' => 'Message sent',
-                        'meta_data' => json_encode(['conversation_id' => $conversation->conversation_id, 'message_id' => $message->id]),
-                        'sender_id' => $message->sender_id,
-                    ]);
-                }
+            if ($fcm && !empty($deviceTokens)) {
+                $fcm->sendNotification($deviceTokens, [
+                    'title' => 'New chat message',
+                    'body' => substr($message->message ?? 'You have a new message', 0, 120),
+                    'conversation_id' => $conversation->conversation_id,
+                    'message_id' => $message->id,
+                    'type' => 'chat'
+                ]);
             }
+
         } catch (\Throwable $e) {
             logger()->error('Chat API push error: ' . $e->getMessage());
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Message sent',
+            'message' => 'Message sent successfully',
             'data' => $message
         ]);
     }

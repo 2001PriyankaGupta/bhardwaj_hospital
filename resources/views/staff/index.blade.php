@@ -454,41 +454,54 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>10:00 AM</td>
-                                    <td>John Doe</td>
-                                    <td>Room 204</td>
-                                    <td>Medication - Antibiotics</td>
-                                    <td><span class="badge bg-warning">Pending</span></td>
-                                </tr>
-                                <tr>
-                                    <td>11:00 AM</td>
-                                    <td>Sarah Smith</td>
-                                    <td>Ward 3, Bed 2</td>
-                                    <td>Vital Signs Check</td>
-                                    <td><span class="badge bg-info">Upcoming</span></td>
-                                </tr>
-                                <tr>
-                                    <td>01:00 PM</td>
-                                    <td>Michael Brown</td>
-                                    <td>Room 105</td>
-                                    <td>Wound Dressing Change</td>
-                                    <td><span class="badge bg-info">Upcoming</span></td>
-                                </tr>
-                                <tr>
-                                    <td>02:30 PM</td>
-                                    <td>Emma Wilson</td>
-                                    <td>ICU Bed 3</td>
-                                    <td>IV Line Check</td>
-                                    <td><span class="badge bg-info">Upcoming</span></td>
-                                </tr>
-                                <tr>
-                                    <td>04:00 PM</td>
-                                    <td>All Wards</td>
-                                    <td>All Rooms</td>
-                                    <td>Evening Rounds</td>
-                                    <td><span class="badge bg-secondary">Scheduled</span></td>
-                                </tr>
+                                @if (isset($todayAppointmentsList) && $todayAppointmentsList->count() > 0)
+                                    @foreach ($todayAppointmentsList as $ap)
+                                        <tr>
+                                            <td>
+                                                @if ($ap->start_time)
+                                                    {{ \Carbon\Carbon::parse($ap->start_time)->format('h:i A') }}
+                                                    @if ($ap->end_time)
+                                                        - {{ \Carbon\Carbon::parse($ap->end_time)->format('h:i A') }}
+                                                    @endif
+                                                @else
+                                                    --
+                                                @endif
+                                            </td>
+                                            <td>{{ $ap->patient ? trim(($ap->patient->first_name ?? '') . ' ' . ($ap->patient->last_name ?? '')) : 'Patient' }}
+                                            </td>
+                                            <td>
+                                                @if (isset($ap->resource) && isset($ap->resource->name))
+                                                    {{ $ap->resource->name }}
+                                                @elseif(isset($ap->department) && isset($ap->department->name))
+                                                    {{ $ap->department->name }}
+                                                @else
+                                                    N/A
+                                                @endif
+                                            </td>
+                                            <td>{{ ucfirst($ap->type ?? 'Appointment') }}</td>
+                                            <td>
+                                                @php $status = strtolower($ap->status ?? ''); @endphp
+                                                @if ($status == 'scheduled')
+                                                    <span class="badge bg-info">Scheduled</span>
+                                                @elseif($status == 'confirmed')
+                                                    <span class="badge bg-primary">Confirmed</span>
+                                                @elseif($status == 'completed')
+                                                    <span class="badge bg-success">Completed</span>
+                                                @elseif($status == 'cancelled' || $status == 'canceled')
+                                                    <span class="badge bg-danger">Cancelled</span>
+                                                @else
+                                                    <span
+                                                        class="badge bg-secondary">{{ ucfirst($ap->status ?? 'Pending') }}</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @else
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">No appointments scheduled for
+                                            today.</td>
+                                    </tr>
+                                @endif
                             </tbody>
                         </table>
                     </div>

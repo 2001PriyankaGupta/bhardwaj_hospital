@@ -1,4 +1,4 @@
-@extends('admin.layouts.master')
+@extends('staff.layouts.master')
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.bootstrap4.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
@@ -456,7 +456,7 @@
             $modal.modal('show');
 
             $.ajax({
-                url: '{{ url('admin/payments') }}/' + paymentId,
+                url: '{{ url('staff/payments') }}/' + paymentId,
                 method: 'GET',
                 dataType: 'json',
                 success: function(res) {
@@ -501,7 +501,7 @@
                 }
             });
 
-            var url = '{{ url('admin/payments') }}/' + paymentId + '/mark-paid';
+            var url = '{{ url('staff/payments') }}/' + paymentId + '/mark-paid';
 
             $.post(url, {}, function(res) {
                 if (res && res.success) {

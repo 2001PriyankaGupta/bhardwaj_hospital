@@ -10,7 +10,7 @@
                 <div class="card">
                     <div class="card-body text-center">
                         @if ($doctor->profile_image)
-                            <img src="{{ Storage::url($doctor->profile_image) }}" alt="{{ $doctor->full_name }}"
+                            <img src="{{ asset('storage/'.$doctor->profile_image) }}" alt="{{ $doctor->full_name }}"
                                 class="rounded-circle" width="150" height="150">
                         @else
                             <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto"
@@ -129,7 +129,7 @@
                 </div>
 
                 <!-- Current Week Schedule -->
-                <div class="card mt-3">
+                {{-- <div class="card mt-3">
                     <div class="card-header">
                         <h5 class="card-title">Current Schedule</h5>
                     </div>
@@ -172,7 +172,7 @@
                             <p class="text-muted">No schedule configured yet.</p>
                         @endif
                     </div>
-                </div>
+                </div> --}}
             </div>
         </div>
     </div>

@@ -10,7 +10,7 @@
                 <div class="card">
                     <div class="card-body text-center">
                         @if ($doctor->profile_image)
-                            <img src="{{ Storage::url($doctor->profile_image) }}" alt="{{ $doctor->full_name }}"
+                            <img src="{{ asset('storage/'.$doctor->profile_image) }}" alt="{{ $doctor->full_name }}"
                                 class="rounded-circle" width="150" height="150">
                         @else
                             <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto"

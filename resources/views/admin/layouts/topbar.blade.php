@@ -5,7 +5,7 @@
             <!-- LOGO -->
             <div class="navbar-brand-box">
                 <a href="#" target="_blank" class="logo logo-dark">
-                    <h3 style="color: white;margin-top: 9px; font-size: 20px; font-weight: 700;">MediCare Hospital</h3>
+                    <h3 style="color: white;margin-top: 9px; font-size: 20px; font-weight: 700;">Bhardwaj Hospital</h3>
                     <p style="color: rgba(255, 255, 255, 0.8);margin: 5px 0 0 0; font-size: 12px;">Management System</p>
                 </a>
 
@@ -79,7 +79,8 @@
                         <i class="mdi mdi-power font-size-16 align-middle me-1 text-danger"></i> Logout
                     </a>
 
-                    <form id="logout-form" action="{{ route($user_type . '.logout') }}" method="GET" style="display: none;">
+                    <form id="logout-form" action="{{ route($user_type . '.logout') }}" method="GET"
+                        style="display: none;">
                         @csrf
                     </form>
 

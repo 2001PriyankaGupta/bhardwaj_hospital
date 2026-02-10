@@ -15,15 +15,27 @@ use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use TaylanUnutmaz\AgoraTokenBuilder\RtcTokenBuilder;
 
 class VideoCallController extends Controller
 {
     protected $agoraService;
 
+     protected $appId;
+    protected $appCertificate;
+
+    // Role constants
+    const ROLE_PUBLISHER = 1;    // Can publish stream
+    const ROLE_SUBSCRIBER = 2;
+
     public function __construct()
     {
         $this->agoraService = new AgoraService();
+         $this->appId = config('services.agora.key');
+        $this->appCertificate = config('services.agora.secret');
     }
+
+    
 
 
     public function getActiveCall(Request $request)
@@ -118,12 +130,14 @@ class VideoCallController extends Controller
         }
 
         // Generate token for patient
-        $token = $this->agoraService->generateToken(
-            $videoCall->channel_name,
-            $user->id, // patient user ID
-            1, // role (publisher)
-            3600
-        );
+        // $token = $this->agoraService->generateToken(
+        //     $videoCall->channel_name,
+        //     $user->id, 
+        //     2, 
+        //     3600
+        // );
+
+        $token = $this->generateToken($videoCall->channel_name, $user->id);
 
         // Update call status
         $videoCall->update([
@@ -142,6 +156,28 @@ class VideoCallController extends Controller
                 'appointment_id' => $videoCall->appointment_id
             ]
         ]);
+    }
+
+    public function generateToken($channelName, $uid)
+    {
+        $expireTimeInSeconds = 3600;
+        
+        $appID = config('services.agora.key');
+        $appCertificate = config('services.agora.secret');
+        
+        $privilegeExpiredTs = time() + $expireTimeInSeconds;
+
+        // Use the new package's RtcTokenBuilder
+        $token = RtcTokenBuilder::buildTokenWithUid(
+            $appID,
+            $appCertificate,
+            $channelName,
+            $uid,
+            RtcTokenBuilder::RolePublisher,
+            $privilegeExpiredTs
+        );
+
+        return $token;
     }
 
 

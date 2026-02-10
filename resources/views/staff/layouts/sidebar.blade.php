@@ -162,6 +162,7 @@
                 request()->routeIs('staff.patients.*') ||
                 request()->routeIs('staff.queue.*') ||
                 request()->routeIs('staff.events.*') ||
+                request()->routeIs('staff.payments.*') ||
                 request()->routeIs('staff.beds.*') ||
                 request()->routeIs('staff.emergency.*')
                     ? 'active'
@@ -177,6 +178,7 @@
                     request()->routeIs('staff.patients.*') ||
                     request()->routeIs('staff.invoices.*') ||
                     request()->routeIs('staff.events.*') ||
+                    request()->routeIs('staff.payments.*') ||
                     request()->routeIs('staff.beds.*') ||
                     request()->routeIs('staff.queue.*') ||
                     request()->routeIs('staff.emergency.*')
@@ -251,6 +253,16 @@
                             <a href="{{ route('staff.emergency.index') }}"
                                 class="{{ request()->routeIs('staff.emergency.*') ? 'active-link' : '' }}">
                                 Emergency Triage
+                            </a>
+                        </li>
+                    @endif
+
+                    @if ($user->hasPermission('manage_payments'))
+                        <li class="{{ request()->routeIs('staff.payments.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('staff.payments.index') }}"
+                                class="{{ request()->routeIs('staff.payments.*') ? 'active-link' : '' }}">
+
+                                Payment Transactions
                             </a>
                         </li>
                     @endif

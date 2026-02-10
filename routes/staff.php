@@ -25,6 +25,7 @@ use App\Http\Controllers\admin\RoleController;
 use App\Http\Controllers\admin\ScheduleController;
 use App\Http\Controllers\admin\BannerController;
 use App\Http\Controllers\admin\HealthTipController;
+use App\Http\Controllers\admin\PaymentController;
 
 
 Route::post('login', [AuthController::class, 'loginSubmit'])->name('login.submit');
@@ -236,6 +237,18 @@ Route::middleware(['auth', 'staff'])->group(function () {
     //     Route::delete('/date-slots/{dateSlot}', [ScheduleController::class, 'deleteSchedule'])
     //         ->name('doctor.date-slots.delete');
     // });
+
+     Route::get('doctors/{doctor}/schedules', [ScheduleController::class, 'schedules'])->name('doctors.schedules');
+    Route::post('doctors/{doctor}/schedules', [ScheduleController::class, 'storeSchedule'])->name('doctors.schedules.store');
+
+    // Payment Transactions
+    Route::prefix('payments')->name('payments.')->group(function () {
+        Route::get('/', [PaymentController::class, 'index'])->name('index');
+        Route::get('/{id}', [PaymentController::class, 'show'])->name('show');
+    });
+
+    Route::post('payments/{id}/mark-paid', [PaymentController::class, 'markAsPaid'])
+        ->name('payments.mark-paid');
 
 
     

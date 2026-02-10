@@ -132,6 +132,7 @@ Route::prefix('medical-reports')->group(function () {
     Route::get('/events', [CommonDataController::class, 'getEvents']);
     Route::get('/events/{id}', [CommonDataController::class, 'getEventById']);
     Route::get('/health-tips', [CommonDataController::class, 'getHealthTips']);
+     Route::get('/health-tips-search', [CommonDataController::class, 'searchHealthTips']);
     Route::get('/banners', [CommonDataController::class, 'getBanners']);
     Route::get('/notifications', [CommonDataController::class, 'getNotifications']);
     Route::get('/prescriptions', [CommonDataController::class, 'getPrescriptions']);
