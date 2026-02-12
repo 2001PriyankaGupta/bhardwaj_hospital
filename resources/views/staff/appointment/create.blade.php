@@ -219,9 +219,20 @@
                     success: function(response) {
                         if (response.dates && response.dates.length > 0) {
                             let dateHtml = '<option value="">Choose Date</option>';
+                            // Get today's date for comparison
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+
                             response.dates.forEach(date => {
-                                dateHtml +=
-                                    `<option value="${date.date}">${date.formatted}</option>`;
+                                // Parse YYYY-MM-DD
+                                const parts = date.date.split('-');
+                                const itemDate = new Date(parts[0], parts[1] - 1, parts[2]);
+
+                                // Only show today or future dates
+                                if (itemDate >= today) {
+                                    dateHtml +=
+                                        `<option value="${date.date}">${date.formatted}</option>`;
+                                }
                             });
                             dateSelect.html(dateHtml).prop('disabled', false);
                             $('#dateLoadingMsg').text('');
@@ -273,7 +284,22 @@
                             // Store slots for later reference
                             window.availableSlots = response.slots;
 
+                            // Get current time for comparison
+                            const now = new Date();
+                            const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+                            const isToday = (selectedDate === todayStr);
+                            const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
+
                             response.slots.forEach(slot => {
+                                // Skip past slots if date is today
+                                if (isToday) {
+                                    const [h, m] = slot.start.split(':').map(Number);
+                                    const slotTotalMinutes = h * 60 + m;
+                                    if (slotTotalMinutes < currentTotalMinutes) {
+                                        return;
+                                    }
+                                }
+
                                 const disabled = !slot.available ? 'disabled' : '';
                                 const booked = !slot.available ? ' (Booked)' : '';
                                 // Extract start time from display (e.g., "09:00 AM" from "09:00 AM - 09:30 AM")

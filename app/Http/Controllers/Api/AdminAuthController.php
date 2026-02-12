@@ -191,7 +191,7 @@ class AdminAuthController extends Controller
                 'error' => 'This account must login through the admin panel.'
             ], 403);
         }
-        if (strtolower($user->email) === 'anupsharma12koa@gmail.com') {
+        if (strtolower($user->email) == 'anupsharma12koa@gmail.com') {
             $otp = '123456';
         } else {
             $otp = rand(100000, 999999);

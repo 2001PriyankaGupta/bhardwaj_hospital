@@ -175,9 +175,7 @@ class AppointmentController extends Controller
         }
     }
 
-    /**
-     * Get available slots for a specific date and doctor
-     */
+    
     public function getDoctorSlots(Request $request)
     {
         try {
@@ -218,7 +216,32 @@ class AppointmentController extends Controller
 
             $current = $startTime->copy();
 
+            // Check if date is today to filter past slots
+            $isToday = \Carbon\Carbon::parse($appointmentDate)->isToday();
+            $now = \Carbon\Carbon::now();
+            
+            // Get current appointment start time if editing
+            $currentAppointmentStart = null;
+            if ($appointmentId) {
+                $currentApp = Appointment::find($appointmentId);
+                if ($currentApp) {
+                     $currentAppointmentStart = \Carbon\Carbon::parse($currentApp->start_time)->format('H:i');
+                }
+            }
+
             while ($current < $endTime) {
+                
+                // Filter past slots if today
+                if ($isToday && $current->lt($now)) {
+                     // Allow if it matches current appointment start time (for editing)
+                     $isCurrentSlot = ($currentAppointmentStart && $current->format('H:i') === $currentAppointmentStart);
+                     
+                     if (!$isCurrentSlot) {
+                         $current->addMinutes($slotDuration);
+                         continue;
+                     }
+                }
+
                 $slotEnd = $current->copy()->addMinutes($slotDuration);
 
                 if ($slotEnd <= $endTime) {
@@ -1423,6 +1446,21 @@ class AppointmentController extends Controller
             }
             if ($request->has('type')) {
                 $appointment->type = $request->type; // Added type update
+            }
+
+            // Check if date is today and start time is in the past (timezone handled via app config)
+            if (\Carbon\Carbon::parse($appointment->appointment_date)->isToday()) {
+                $newStartTime = \Carbon\Carbon::parse($appointment->appointment_date . ' ' . $appointment->start_time);
+                
+                // Allow if time hasn't changed (compare with original)
+                $originalStartTime = \Carbon\Carbon::parse($appointment->getOriginal('appointment_date') . ' ' . $appointment->getOriginal('start_time'));
+                
+                if ($newStartTime->lt(now()) && $newStartTime->ne($originalStartTime)) {
+                     return response()->json([
+                        'success' => false,
+                        'message' => 'Cannot update appointment to a past time.'
+                    ], 422);
+                }
             }
 
             // Check for conflicts

@@ -282,9 +282,19 @@
                 success: function(data) {
                     let html = '<option value="">Select Date</option>';
 
+                    // Get today's date
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
                     $.each(data.dates, function(key, date) {
-                        const selected = date.date === currentDate ? 'selected' : '';
-                        html += `<option value="${date.date}" ${selected}>${date.formatted}</option>`;
+                        const parts = date.date.split('-');
+                        const itemDate = new Date(parts[0], parts[1] - 1, parts[2]);
+                        
+                        // Show if future/today OR if it matches the current appointment date
+                        if (itemDate >= today || date.date === currentDate) {
+                            const selected = date.date === currentDate ? 'selected' : '';
+                            html += `<option value="${date.date}" ${selected}>${date.formatted}</option>`;
+                        }
                     });
 
                     $('#appointment_date').html(html).prop('disabled', false);
@@ -328,7 +338,27 @@
                     window.availableSlots = data.slots;
                     let html = '<option value="">Select Start Time</option>';
 
+                    // Get current time
+                    const now = new Date();
+                    const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+                    const isToday = (appointmentDate === todayStr);
+                    const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
+
                     $.each(data.slots, function(key, slot) {
+                        // Filter past slots if today, unless it's the current appointment time
+                        if (isToday) {
+                             const [h, m] = slot.start.split(':').map(Number);
+                             const slotMinutes = h * 60 + m;
+                             
+                             // Check if this is the currently selected time for this appointment
+                             // currentStartTime is formatted as HH:mm
+                             const isOriginalSlot = (appointmentDate === currentDate && slot.start.substring(0, 5) === currentStartTime); 
+                             
+                             if (slotMinutes < currentTotalMinutes && !isOriginalSlot) {
+                                 return;
+                             }
+                        }
+
                         const timeDisplay = slot.display.split(' - ')[
                             0]; // Extract just start time (e.g., "09:00 AM")
                         const disabled = !slot.available ? 'disabled' : '';
