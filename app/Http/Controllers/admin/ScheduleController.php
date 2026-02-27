@@ -8,6 +8,7 @@ use App\Models\DateSlot;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class ScheduleController extends Controller
@@ -17,8 +18,18 @@ class ScheduleController extends Controller
         $user = Auth::user();
         $userType = $user->user_type;
         
-        // Current month ke slots fetch karenge
-        $currentMonth = Carbon::now()->format('Y-m');
+        // Fetch weekly schedules
+        $schedules = \App\Models\DoctorSchedule::where('doctor_id', $doctor->id)->get();
+            
+        return view($userType.'.doctor.schedules', compact('doctor', 'schedules'));
+    }
+
+    public function dateManagement(Doctor $doctor)
+    {
+        $user = Auth::user();
+        $userType = $user->user_type;
+        
+        // Fetch date slots for current month
         $dateSlots = DateSlot::where('doctor_id', $doctor->id)
             ->where('slot_date', '>=', Carbon::now()->startOfMonth())
             ->where('slot_date', '<=', Carbon::now()->endOfMonth())
@@ -31,54 +42,95 @@ class ScheduleController extends Controller
 
     public function storeSchedule(Request $request, Doctor $doctor)
     {
-        $validator = Validator::make($request->all(), [
-            'slot_date' => 'required|date|after_or_equal:today',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
-            'slot_duration' => 'required|integer|in:15,30,45,60',
-            'max_patients' => 'required|integer|min:1|max:50',
-        ]);
+        $daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        
+        // Start and end dates for bulk generation (default to 1 month)
+        $startDate = $request->input('bulk_start_date') ? Carbon::parse($request->input('bulk_start_date')) : Carbon::today();
+        $endDate = $request->input('bulk_end_date') ? Carbon::parse($request->input('bulk_end_date')) : Carbon::today()->addDays(30);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+        DB::beginTransaction();
+        try {
+            foreach ($daysOfWeek as $day) {
+                if ($request->has("day_of_week.{$day}")) {
+                    $isAvailable = $request->has("available.{$day}") && $request->input("available.{$day}") == 1;
+                    
+                    // Fallback to defaults if inputs are missing (happens when disabled in frontend)
+                    $startTime = $request->input("start_time.{$day}") ?? '09:00';
+                    $endTime = $request->input("end_time.{$day}") ?? '17:00';
+                    $slotDuration = $request->input("slot_duration.{$day}") ?? 30;
+                    $maxPatients = $request->input("max_patients.{$day}") ?? 10;
+
+                    // Save weekly pattern
+                    $weeklySchedule = \App\Models\DoctorSchedule::updateOrCreate(
+                        ['doctor_id' => $doctor->id, 'day_of_week' => $day],
+                        [
+                            'start_time' => $startTime,
+                            'end_time' => $endTime,
+                            'slot_duration' => $slotDuration,
+                            'max_patients' => $maxPatients,
+                            'is_available' => $isAvailable
+                        ]
+                    );
+
+                    // If generating for the month
+                    if ($isAvailable) {
+                        for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+                            if (strtolower($date->format('l')) === $day) {
+                                // Check if slot already exists for this date
+                                $existingSlot = DateSlot::where('doctor_id', $doctor->id)
+                                    ->where('slot_date', $date->format('Y-m-d'))
+                                    ->first();
+
+                                if (!$existingSlot) {
+                                    $timeSlots = $this->generateTimeSlots($startTime, $endTime, $slotDuration, $maxPatients);
+
+                                    DateSlot::create([
+                                        'doctor_id' => $doctor->id,
+                                        'slot_date' => $date->format('Y-m-d'),
+                                        'start_time' => $startTime,
+                                        'end_time' => $endTime,
+                                        'slot_duration' => $slotDuration,
+                                        'max_patients' => $maxPatients,
+                                        'booked_slots' => 0,
+                                        'is_available' => true,
+                                        'time_slots' => $timeSlots,
+                                    ]);
+                                } else {
+                                    // If slot exists but has 0 bookings, we update it to match new pattern
+                                    if ($existingSlot->booked_slots == 0) {
+                                        $timeSlots = $this->generateTimeSlots($startTime, $endTime, $slotDuration, $maxPatients);
+                                        $existingSlot->update([
+                                            'start_time' => $startTime,
+                                            'end_time' => $endTime,
+                                            'slot_duration' => $slotDuration,
+                                            'max_patients' => $maxPatients,
+                                            'is_available' => true,
+                                            'time_slots' => $timeSlots,
+                                        ]);
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        // If marked as NOT available (e.g. Sunday Off), clear existing slots for this day in range
+                        // We only remove if there are no bookings to avoid breaking existing appointments
+                        for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+                            if (strtolower($date->format('l')) === $day) {
+                                DateSlot::where('doctor_id', $doctor->id)
+                                    ->where('slot_date', $date->format('Y-m-d'))
+                                    ->where('booked_slots', 0)
+                                    ->delete();
+                            }
+                        }
+                    }
+                }
+            }
+            DB::commit();
+            return redirect()->back()->with('success', 'Weekly schedule saved and monthly slots generated.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Error saving schedule: ' . $e->getMessage());
         }
-
-        // Check if slot already exists
-        $existingSlot = DateSlot::where('doctor_id', $doctor->id)
-            ->where('slot_date', $request->slot_date)
-            ->where('start_time', $request->start_time)
-            ->first();
-
-        if ($existingSlot) {
-            return redirect()->back()
-                ->with('error', 'Slot for this date and time already exists.')
-                ->withInput();
-        }
-
-        // Generate time slots
-        $timeSlots = $this->generateTimeSlots(
-            $request->start_time,
-            $request->end_time,
-            $request->slot_duration,
-            $request->max_patients
-        );
-
-        // Create new slot
-        $dateSlot = DateSlot::create([
-            'doctor_id' => $doctor->id,
-            'slot_date' => $request->slot_date,
-            'start_time' => $request->start_time,
-            'end_time' => $request->end_time,
-            'slot_duration' => $request->slot_duration,
-            'max_patients' => $request->max_patients,
-            'booked_slots' => 0,
-            'is_available' => true,
-            'time_slots' => $timeSlots,
-        ]);
-
-        return redirect()->back()->with('success', 'Date slot added successfully.');
     }
 
     public function updateSchedule(Request $request, int $id)

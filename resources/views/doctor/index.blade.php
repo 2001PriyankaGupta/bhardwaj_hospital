@@ -250,7 +250,10 @@
                         daily
                         schedule and patient summary.</p>
                 </div>
-                <div>
+                <div class="d-flex gap-2">
+                    <a href="{{ route('doctor.doctors.schedules', auth()->user()->doctor_id ?? auth()->user()->doctor->id) }}" class="btn btn-orange text-white">
+                        <i class="fas fa-calendar-alt"></i> Manage Slots
+                    </a>
                     <a href="{{ route('doctor.chat.index') }}" class="btn btn-primary">
                         <i class="fas fa-comments"></i> Chat with Patients
                     </a>

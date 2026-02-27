@@ -25,6 +25,8 @@ Route::middleware(['auth', 'doctor'])->group(function () {
     Route::post('/profile/change-password', [ProfileController::class, 'changePassword'])->name('profile.change-password');
 
     Route::resource('appointments', AppointmentController::class);
+    Route::get('appointments/doctor-dates', [AppointmentController::class, 'getDoctorDates'])->name('appointments.doctor-dates');
+    Route::get('appointments/doctor-slots', [AppointmentController::class, 'getDoctorSlots'])->name('appointments.doctor-slots');
     Route::get('appointments/slots/available', [AppointmentController::class, 'getAvailableSlots'])->name('appointments.slots.available');
     Route::get('appointments/resources/available', [AppointmentController::class, 'getAvailableResources'])->name('appointments.resources.available');
     Route::post('appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.status.update');
@@ -94,11 +96,8 @@ Route::middleware(['auth', 'doctor'])->group(function () {
     Route::resource('emergency', EmergencyTriageController::class);
     Route::post('emergency/{emergency}/assign-staff', [EmergencyTriageController::class, 'assignStaff'])->name('emergency.assign-staff');
     Route::post('emergency/{emergency}/update-status', [EmergencyTriageController::class, 'updateStatus'])->name('emergency.update-status');
-});
-
-
-
     Route::get('doctors/{doctor}/schedules', [ScheduleController::class, 'schedules'])->name('doctors.schedules');
+    Route::get('doctors/{doctor}/date-management', [ScheduleController::class, 'dateManagement'])->name('doctors.date-management');
     Route::post('doctors/{doctor}/schedules', [ScheduleController::class, 'storeSchedule'])->name('doctors.schedules.store');
     Route::get('doctors/{doctor}/leaves', [DoctorController::class, 'leaves'])->name('doctors.leaves');
     Route::put('leaves/{leave}/status', [DoctorController::class, 'updateLeaveStatus'])->name('leaves.status.update');
@@ -114,6 +113,7 @@ Route::middleware(['auth', 'doctor'])->group(function () {
 
     Route::delete('date-slots/{id}', [ScheduleController::class, 'deleteSchedule'])
             ->name('doctor.date-slots.delete');
+});
 
 
 

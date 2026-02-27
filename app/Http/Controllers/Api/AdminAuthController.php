@@ -30,10 +30,10 @@ class AdminAuthController extends Controller
                 'gender' => 'required|string|in:male,female,other',
                 'age' => 'required|integer|min:1|max:120',
                 'address' => 'required|string|max:500',
-                'emergency_contact_number' => 'required|string|min:10|max:15',
-                'alternate_contact_number' => 'sometimes|string|min:10|max:15',
-                'basic_medical_history' => 'sometimes|string',
-                'profile_image' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'emergency_contact_number' => 'nullable|string|min:10|max:15',
+                'alternate_contact_number' => 'nullable|string|min:10|max:15',
+                'basic_medical_history' => 'nullable|string',
+                'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             $firstError = collect($e->errors())->first()[0];
@@ -91,7 +91,7 @@ class AdminAuthController extends Controller
                 'gender' => $validated['gender'],
                 'age' => $validated['age'],
                 'address' => $validated['address'],
-                'emergency_contact_number' => $validated['emergency_contact_number'],
+                'emergency_contact_number' => $validated['emergency_contact_number'] ?? null,
                 'alternate_contact_number' => $validated['alternate_contact_number'] ?? null,
                 'basic_medical_history' => $validated['basic_medical_history'] ?? null,
                 'profile_picture' => $profilePicturePath,
@@ -117,7 +117,6 @@ class AdminAuthController extends Controller
 
             $user->save();
 
-            // ✅ TOKEN GENERATION CODE ADDED HERE
             try {
                 $token = JWTAuth::fromUser($user);
             } catch (\Exception $tokenException) {
@@ -125,7 +124,6 @@ class AdminAuthController extends Controller
                 throw new \Exception('Token generation failed');
             }
 
-            // Commit transaction
             DB::commit();
 
             return response()->json([
@@ -153,7 +151,7 @@ class AdminAuthController extends Controller
             return response()->json([
                 'status' => 'false',
                 'message' => 'Patient registration failed',
-                'error' => $e->getMessage() // ✅ Better to show actual error for debugging
+                'error' => $e->getMessage() 
             ], 500);
         }
     }

@@ -14,6 +14,8 @@ use App\Models\Payment;
 use App\Models\Invoice;
 use App\Models\ChatAssignment;
 use App\Models\QueueManagement;
+use App\Models\DateSlot;
+use App\Models\DoctorSchedule;
 use App\Services\AgoraService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -136,37 +138,57 @@ class AppointmentController extends Controller
                 return response()->json(['error' => 'Doctor ID is required'], 400);
             }
 
-            $doctor = Doctor::findOrFail($doctorId);
-
-            // Get available dates from date_slots table
-            $dateSlots = DB::table('date_slots')
-                ->where('doctor_id', $doctorId)
+            // Get weekly schedule days (fallback)
+            $weeklyDays = DoctorSchedule::where('doctor_id', $doctorId)
                 ->where('is_available', true)
-                ->where('slot_date', '>=', now()->toDateString())
-                ->orderBy('slot_date')
-                ->get();
+                ->pluck('day_of_week')
+                ->map(fn($day) => strtolower($day))
+                ->toArray();
 
-            if ($dateSlots->isEmpty()) {
-                return response()->json(['dates' => [], 'message' => 'No dates available']);
-            }
+            // Get specific DateSlot overrides (both available and potentially blocked)
+            // We'll trust DateSlot existence as the primary source of truth for those dates
+            $dateSlots = DateSlot::where('doctor_id', $doctorId)
+                ->where('slot_date', '>=', now()->toDateString())
+                ->where('slot_date', '<=', now()->addDays(60)->toDateString())
+                ->get()
+                ->keyBy('slot_date'); // Key by Y-m-d
 
             $availableDates = [];
+            $startDate = now();
+            $endDate = now()->addDays(60);
 
-            foreach ($dateSlots as $slot) {
-                $date = \Carbon\Carbon::parse($slot->slot_date);
+            $current = $startDate->copy();
+            while ($current <= $endDate) {
+                $dateStr = $current->toDateString();
+                $dayName = strtolower($current->format('l'));
+                $isAvailable = false;
 
-                // Check if this date already exists in the response
-                $exists = collect($availableDates)->contains(function($item) use ($slot) {
-                    return $item['date'] === $slot->slot_date;
-                });
+                // Priority 1: Check DateSlot
+                if ($dateSlots->has($dateStr)) {
+                    $slot = $dateSlots->get($dateStr);
+                    // If DateSlot exists, use its availability status
+                    // Note: If DateSlot exists, it usually means it was generated/configured.
+                    // If is_available is false, it's blocked.
+                    if ($slot->is_available) {
+                         $isAvailable = true;
+                    }
+                } 
+                // Priority 2: Fallback to Weekly Schedule (if no DateSlot entry exists)
+                // Assuming absence of DateSlot means "follow weekly pattern"
+                else {
+                    if (in_array($dayName, $weeklyDays)) {
+                        $isAvailable = true;
+                    }
+                }
 
-                if (!$exists) {
+                if ($isAvailable) {
                     $availableDates[] = [
-                        'date' => $slot->slot_date,
-                        'formatted' => $date->format('d M Y, l'),
-                        'day' => $date->format('l')
+                        'date' => $dateStr,
+                        'formatted' => $current->format('d M Y, l'),
+                        'day' => $current->format('l')
                     ];
                 }
+                $current->addDay();
             }
 
             return response()->json(['dates' => $availableDates]);
@@ -175,102 +197,140 @@ class AppointmentController extends Controller
         }
     }
 
-    
     public function getDoctorSlots(Request $request)
     {
         try {
             $doctorId = $request->query('doctor_id');
             $appointmentDate = $request->query('date');
-            $appointmentId = $request->query('appointment_id'); // Get current appointment ID for editing
+            $appointmentId = $request->query('appointment_id'); 
 
             if (!$doctorId || !$appointmentDate) {
                 return response()->json(['error' => 'Doctor ID and date are required'], 400);
             }
 
-            $doctor = Doctor::findOrFail($doctorId);
-
-            // Get doctor's schedule for this specific date from date_slots table
-            $dateSlot = DB::table('date_slots')
-                ->where('doctor_id', $doctorId)
-                ->where('slot_date', $appointmentDate)
-                ->where('is_available', true)
-                ->first();
-
-            if (!$dateSlot) {
-                return response()->json(['slots' => [], 'message' => 'Doctor not available on this date']);
-            }
-
-            // Generate time slots
-            $slots = [];
-            // Parse time - handle both 'H:i' and 'H:i:s' formats
-            $startTimeStr = is_string($dateSlot->start_time) ? $dateSlot->start_time : $dateSlot->start_time->format('H:i:s');
-            $endTimeStr = is_string($dateSlot->end_time) ? $dateSlot->end_time : $dateSlot->end_time->format('H:i:s');
-
-            // Remove seconds if present
-            $startTimeStr = substr($startTimeStr, 0, 5);
-            $endTimeStr = substr($endTimeStr, 0, 5);
-
-            $startTime = \Carbon\Carbon::createFromFormat('H:i', $startTimeStr);
-            $endTime = \Carbon\Carbon::createFromFormat('H:i', $endTimeStr);
-            $slotDuration = $dateSlot->slot_duration ?? 15;
-
-            $current = $startTime->copy();
-
-            // Check if date is today to filter past slots
+            // check if date is today
             $isToday = \Carbon\Carbon::parse($appointmentDate)->isToday();
             $now = \Carbon\Carbon::now();
-            
-            // Get current appointment start time if editing
-            $currentAppointmentStart = null;
-            if ($appointmentId) {
-                $currentApp = Appointment::find($appointmentId);
-                if ($currentApp) {
-                     $currentAppointmentStart = \Carbon\Carbon::parse($currentApp->start_time)->format('H:i');
-                }
-            }
 
-            while ($current < $endTime) {
-                
-                // Filter past slots if today
-                if ($isToday && $current->lt($now)) {
-                     // Allow if it matches current appointment start time (for editing)
-                     $isCurrentSlot = ($currentAppointmentStart && $current->format('H:i') === $currentAppointmentStart);
-                     
-                     if (!$isCurrentSlot) {
-                         $current->addMinutes($slotDuration);
-                         continue;
-                     }
+            // 1. Try to find specific DateSlot
+            $dateSlot = DateSlot::where('doctor_id', $doctorId)
+                ->where('slot_date', $appointmentDate)
+                ->first();
+
+            $slots = [];
+
+            if ($dateSlot) {
+                // Use the specific slots from DB
+                if (!$dateSlot->is_available) {
+                     return response()->json(['slots' => [], 'message' => 'Doctor not available on this date']);
                 }
 
-                $slotEnd = $current->copy()->addMinutes($slotDuration);
+                $rawSlots = $dateSlot->time_slots ?? []; // Array of ['start', 'end', 'available', 'booked']
 
-                if ($slotEnd <= $endTime) {
-                    // Check if slot is already booked (exclude current appointment if editing)
-                    $appointmentQuery = Appointment::where('doctor_id', $doctorId)
-                        ->where('appointment_date', $appointmentDate)
-                        ->where(function($query) use ($current, $slotEnd) {
-                            $query->where(function($q) use ($current, $slotEnd) {
-                                $q->where('start_time', '<', $slotEnd->format('H:i'))
-                                  ->where('end_time', '>', $current->format('H:i'));
-                            });
-                        });
+                foreach ($rawSlots as $rawSlot) {
+                    $startStr = $rawSlot['start'];
+                    $endStr = $rawSlot['end'];
+                    
+                     // Convert to Carbon for comparison
+                    $startCarbon = \Carbon\Carbon::parse($appointmentDate . ' ' . $startStr);
+                    // $endCarbon = \Carbon\Carbon::parse($appointmentDate . ' ' . $endStr);
 
-                    // Exclude current appointment if we're editing
-                    if ($appointmentId) {
-                        $appointmentQuery->where('id', '!=', $appointmentId);
+                    // Filter past slots if today
+                    if ($isToday && $startCarbon->lt($now)) {
+                         continue; 
                     }
 
-                    $isBooked = $appointmentQuery->exists();
+                    // Check real-time bookings (ignoring the 'booked' count in JSON if unreliable)
+                    $bookingsCount = Appointment::where('doctor_id', $doctorId)
+                        ->where('appointment_date', $appointmentDate)
+                         ->where(function($query) use ($startStr, $endStr) {
+                                // Overlap check: (StartA < EndB) and (EndA > StartB)
+                                $query->where('start_time', '<', $endStr)
+                                      ->where('end_time', '>', $startStr);
+                         })
+                        ->where('status', '!=', 'cancelled') // Important: ignore cancelled
+                        ->when($appointmentId, function($q) use ($appointmentId) {
+                            $q->where('id', '!=', $appointmentId);
+                        })
+                        ->count();
 
-                    $slots[] = [
-                        'start' => $current->format('H:i'),
-                        'end' => $slotEnd->format('H:i'),
-                        'display' => $current->format('h:i A') . ' - ' . $slotEnd->format('h:i A'),
-                        'available' => !$isBooked
-                    ];
+                    // Determine availability
+                    // rawSlot['available'] is the capacity (max patients for this slot)
+                    $capacity = isset($rawSlot['available']) ? (int)$rawSlot['available'] : 1;
+                    $isAvailable = $bookingsCount < $capacity;
+
+                    if ($isAvailable) {
+                        $slots[] = [
+                            'start' => $startStr,
+                            'end' => $endStr,
+                            'display' => \Carbon\Carbon::parse($startStr)->format('h:i A') . ' - ' . \Carbon\Carbon::parse($endStr)->format('h:i A'),
+                            'available' => $isAvailable
+                        ];
+                    }
                 }
 
-                $current->addMinutes($slotDuration);
+            } else {
+                // 2. Fallback to Weekly Schedule Logic
+                $dayOfWeek = strtolower(\Carbon\Carbon::parse($appointmentDate)->format('l'));
+                $schedule = DoctorSchedule::where('doctor_id', $doctorId)
+                    ->where('day_of_week', $dayOfWeek)
+                    ->where('is_available', true)
+                    ->first();
+
+                if (!$schedule) {
+                    return response()->json(['slots' => [], 'message' => 'Doctor not available on this day']);
+                }
+
+                $startTime = \Carbon\Carbon::parse($schedule->start_time);
+                $endTime = \Carbon\Carbon::parse($schedule->end_time);
+                $slotDuration = $schedule->slot_duration ?? 15;
+                $current = $startTime->copy();
+
+                while ($current < $endTime) {
+                    $slotStartStr = $current->format('H:i');
+                    
+                    // Filter past slots
+                     // Check if slot start time is in the past (for today)
+                    $slotStartDateTime = \Carbon\Carbon::parse($appointmentDate . ' ' . $slotStartStr);
+
+                    if ($isToday && $slotStartDateTime->lt($now)) {
+                         $current->addMinutes($slotDuration);
+                         continue;
+                    }
+
+                    $slotEnd = $current->copy()->addMinutes($slotDuration);
+                    
+                    if ($slotEnd <= $endTime) {
+                         $slotEndStr = $slotEnd->format('H:i');
+                         
+                         // Check bookings
+                         $bookingsCount = Appointment::where('doctor_id', $doctorId)
+                            ->where('appointment_date', $appointmentDate)
+                            ->where(function($query) use ($slotStartStr, $slotEndStr) {
+                                $query->where('start_time', '<', $slotEndStr)
+                                      ->where('end_time', '>', $slotStartStr);
+                            })
+                            ->where('status', '!=', 'cancelled')
+                            ->when($appointmentId, function($q) use ($appointmentId) {
+                                $q->where('id', '!=', $appointmentId);
+                            })
+                            ->count();
+                        
+                        $capacity = $schedule->max_patients ?? 1; 
+                        
+                        $isAvailable = $bookingsCount < ($schedule->max_patients ?? 1);
+
+                        if ($isAvailable) {
+                            $slots[] = [
+                                'start' => $slotStartStr,
+                                'end' => $slotEndStr,
+                                'display' => $current->format('h:i A') . ' - ' . $slotEnd->format('h:i A'),
+                                'available' => $isAvailable
+                            ];
+                        }
+                    }
+                    $current->addMinutes($slotDuration);
+                }
             }
 
             return response()->json(['slots' => $slots]);
@@ -1230,14 +1290,13 @@ class AppointmentController extends Controller
 
     public function updateAppointment(Request $request, $id)
     {
-        // Normalize time format - convert H:i:s to H:i if needed (handles both 2:00:00 and 14:00:00)
         if ($request->has('start_time') && preg_match('/^\d{1,2}:\d{2}:\d{2}$/', $request->start_time)) {
-            // Extract H:i from H:i:s by removing the :ss part (everything after the last colon)
+        
             $lastColonPos = strrpos($request->start_time, ':');
             $request->merge(['start_time' => substr($request->start_time, 0, $lastColonPos)]);
         }
         if ($request->has('end_time') && preg_match('/^\d{1,2}:\d{2}:\d{2}$/', $request->end_time)) {
-            // Extract H:i from H:i:s by removing the :ss part (everything after the last colon)
+      
             $lastColonPos = strrpos($request->end_time, ':');
             $request->merge(['end_time' => substr($request->end_time, 0, $lastColonPos)]);
         }
@@ -1264,7 +1323,6 @@ class AppointmentController extends Controller
         DB::beginTransaction();
 
         try {
-            // Authenticate if possible (support JWT and other guards)
             $authUser = null;
             try {
                 $authUser = JWTAuth::parseToken()->authenticate();
@@ -1274,7 +1332,6 @@ class AppointmentController extends Controller
                 $authUser = auth('api')->user() ?? Auth::user() ?? null;
             }
 
-            // Map to a Patient record if applicable
             $authPatient = null;
             if ($authUser) {
                 $authPatient = Patient::where('user_id', $authUser->id)->first();
@@ -1317,7 +1374,6 @@ class AppointmentController extends Controller
                 ], 403);
             }
 
-            // Update doctor ID when provided
             if ($request->has('doctor_id')) {
                 $doctor = Doctor::find($request->doctor_id);
                 if (!$doctor) {
@@ -1329,11 +1385,9 @@ class AppointmentController extends Controller
                 $appointment->doctor_id = $doctor->id;
             }
 
-            // Update patient by id, name, email or phone, allow clearing (restricted)
             if ($request->has('patient_id')) {
                 // allow null to clear
                 if ($request->patient_id) {
-                    // Prevent patient users from reassigning to another patient
                     if ($authPatient && $request->patient_id != $authPatient->id) {
                         return response()->json([
                             'success' => false,
@@ -1350,7 +1404,6 @@ class AppointmentController extends Controller
                     }
                     $appointment->patient_id = $p->id;
                 } else {
-                    // clearing the patient should be allowed only for admin/staff/doctor
                     if (! ($authUser && isset($authUser->user_type) && in_array($authUser->user_type, ['admin', 'staff', 'doctor']))) {
                         return response()->json([
                             'success' => false,
@@ -1366,7 +1419,6 @@ class AppointmentController extends Controller
                         ->first();
 
                     if (!$p) {
-                        // fallback: try to find a user and map to patient
                         $u = User::where('name', $request->patient_name)->first();
                         if ($u) {
                             $p = Patient::where('user_id', $u->id)->first();
@@ -1400,7 +1452,6 @@ class AppointmentController extends Controller
                 }
             }
 
-            // Update resource by id or name, allow clearing
             if ($request->has('resource_id')) {
                 if ($request->resource_id) {
                     $r = Resource::find($request->resource_id);
@@ -1429,16 +1480,13 @@ class AppointmentController extends Controller
                 }
             }
 
-            // Update other fields
             if ($request->has('appointment_date')) {
                 $appointment->appointment_date = $request->appointment_date;
             }
             if ($request->has('start_time')) {
-                // Convert time format from H:i to H:i:s for database storage
                 $appointment->start_time = $request->start_time . ':00';
             }
             if ($request->has('end_time')) {
-                // Convert time format from H:i to H:i:s for database storage
                 $appointment->end_time = $request->end_time . ':00';
             }
             if ($request->has('notes')) {
@@ -1448,22 +1496,34 @@ class AppointmentController extends Controller
                 $appointment->type = $request->type; // Added type update
             }
 
-            // Check if date is today and start time is in the past (timezone handled via app config)
             if (\Carbon\Carbon::parse($appointment->appointment_date)->isToday()) {
-                $newStartTime = \Carbon\Carbon::parse($appointment->appointment_date . ' ' . $appointment->start_time);
+                $dateStr = \Carbon\Carbon::parse($appointment->appointment_date)->format('Y-m-d');
+                $newStartTime = \Carbon\Carbon::parse($dateStr . ' ' . $appointment->start_time);
                 
-                // Allow if time hasn't changed (compare with original)
-                $originalStartTime = \Carbon\Carbon::parse($appointment->getOriginal('appointment_date') . ' ' . $appointment->getOriginal('start_time'));
+                $origDateStr = \Carbon\Carbon::parse($appointment->getOriginal('appointment_date'))->format('Y-m-d');
+                $originalStartTime = \Carbon\Carbon::parse($origDateStr . ' ' . $appointment->getOriginal('start_time'));
                 
                 if ($newStartTime->lt(now()) && $newStartTime->ne($originalStartTime)) {
-                     return response()->json([
-                        'success' => false,
-                        'message' => 'Cannot update appointment to a past time.'
-                    ], 422);
+                     $pmStartTime = $newStartTime->copy()->addHours(12);
+                     if ($pmStartTime->gt(now()) && $pmStartTime->isToday()) {
+                          $appointment->start_time = $pmStartTime->format('H:i:s');
+                          
+                          if ($appointment->end_time) {
+                              $currentEndTime = \Carbon\Carbon::parse($dateStr . ' ' . $appointment->end_time);
+                              if ($currentEndTime->lte($pmStartTime)) {
+                                 
+                                  $appointment->end_time = $currentEndTime->addHours(12)->format('H:i:s');
+                              }
+                          }
+                     } else {
+                         return response()->json([
+                            'success' => false,
+                            'message' => 'Cannot update appointment to a past time. (Received: ' . $newStartTime->format('H:i') . ', Current: ' . now()->format('H:i') . ')'
+                        ], 422);
+                     }
                 }
             }
 
-            // Check for conflicts
             if ($appointment->hasConflicts()) {
                 return response()->json([
                     'success' => false,
@@ -1473,11 +1533,8 @@ class AppointmentController extends Controller
 
             $appointment->save();
             DB::commit();
-
-            // Load relationships for response
             $appointment->load(['doctor', 'patient', 'resource']);
 
-            // Format times as H:i for response
             $startFormatted = $appointment->start_time ? \Carbon\Carbon::parse($appointment->start_time)->format('H:i') : null;
             $endFormatted = $appointment->end_time ? \Carbon\Carbon::parse($appointment->end_time)->format('H:i') : null;
 

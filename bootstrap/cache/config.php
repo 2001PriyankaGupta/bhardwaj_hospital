@@ -25,9 +25,9 @@
   array (
     'paths' => 
     array (
-      0 => 'C:\\wamp64\\www\\bhardwaj-hospital-new\\resources\\views',
+      0 => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\resources\\views',
     ),
-    'compiled' => 'C:\\wamp64\\www\\bhardwaj-hospital-new\\storage\\framework\\views',
+    'compiled' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\framework\\views',
   ),
   'app' => 
   array (
@@ -265,8 +265,8 @@
       'file' => 
       array (
         'driver' => 'file',
-        'path' => 'C:\\wamp64\\www\\bhardwaj-hospital-new\\storage\\framework/cache/data',
-        'lock_path' => 'C:\\wamp64\\www\\bhardwaj-hospital-new\\storage\\framework/cache/data',
+        'path' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\framework/cache/data',
+        'lock_path' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\framework/cache/data',
       ),
       'memcached' => 
       array (
@@ -476,7 +476,7 @@
       'local' => 
       array (
         'driver' => 'local',
-        'root' => 'C:\\wamp64\\www\\bhardwaj-hospital-new\\storage\\app/private',
+        'root' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\app/private',
         'serve' => true,
         'throw' => false,
         'report' => false,
@@ -484,7 +484,7 @@
       'public' => 
       array (
         'driver' => 'local',
-        'root' => 'C:\\wamp64\\www\\bhardwaj-hospital-new\\storage\\app/public',
+        'root' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\app/public',
         'url' => 'http://127.0.0.1:8000/storage',
         'visibility' => 'public',
       ),
@@ -504,7 +504,7 @@
     ),
     'links' => 
     array (
-      'C:\\wamp64\\www\\bhardwaj-hospital-new\\public\\storage' => 'C:\\wamp64\\www\\bhardwaj-hospital-new\\storage\\app/public',
+      'D:\\react-native\\bhardwaj-hospital-new\\backend\\public\\storage' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\app/public',
     ),
   ),
   'jwt' => 
@@ -565,14 +565,14 @@
       'single' => 
       array (
         'driver' => 'single',
-        'path' => 'C:\\wamp64\\www\\bhardwaj-hospital-new\\storage\\logs/laravel.log',
+        'path' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\logs/laravel.log',
         'level' => 'debug',
         'replace_placeholders' => true,
       ),
       'daily' => 
       array (
         'driver' => 'daily',
-        'path' => 'C:\\wamp64\\www\\bhardwaj-hospital-new\\storage\\logs/laravel.log',
+        'path' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\logs/laravel.log',
         'level' => 'debug',
         'days' => 14,
         'replace_placeholders' => true,
@@ -637,7 +637,7 @@
       ),
       'emergency' => 
       array (
-        'path' => 'C:\\wamp64\\www\\bhardwaj-hospital-new\\storage\\logs/laravel.log',
+        'path' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\logs/laravel.log',
       ),
     ),
   ),
@@ -715,7 +715,7 @@
       'theme' => 'default',
       'paths' => 
       array (
-        0 => 'C:\\wamp64\\www\\bhardwaj-hospital-new\\resources\\views/vendor/mail',
+        0 => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\resources\\views/vendor/mail',
       ),
     ),
   ),
@@ -856,7 +856,7 @@
     'lifetime' => 120,
     'expire_on_close' => false,
     'encrypt' => false,
-    'files' => 'C:\\wamp64\\www\\bhardwaj-hospital-new\\storage\\framework/sessions',
+    'files' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\framework/sessions',
     'connection' => NULL,
     'table' => 'sessions',
     'store' => NULL,
@@ -880,10 +880,10 @@
     'convert_entities' => true,
     'options' => 
     array (
-      'font_dir' => 'C:\\wamp64\\www\\bhardwaj-hospital-new\\storage\\fonts',
-      'font_cache' => 'C:\\wamp64\\www\\bhardwaj-hospital-new\\storage\\fonts',
+      'font_dir' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\fonts',
+      'font_cache' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\fonts',
       'temp_dir' => 'C:\\Users\\hp\\AppData\\Local\\Temp',
-      'chroot' => 'C:\\wamp64\\www\\bhardwaj-hospital-new',
+      'chroot' => 'D:\\react-native\\bhardwaj-hospital-new\\backend',
       'allowed_protocols' => 
       array (
         'data://' => 
@@ -1041,7 +1041,7 @@
     ),
     'temporary_files' => 
     array (
-      'local_path' => 'C:\\wamp64\\www\\bhardwaj-hospital-new\\storage\\framework/cache/laravel-excel',
+      'local_path' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\framework/cache/laravel-excel',
       'local_permissions' => 
       array (
       ),
