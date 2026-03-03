@@ -39,9 +39,9 @@
                 <a class="btn btn-info mr-2" href="{{ route('doctor.appointments.calendar') }}">
                     <i class="fas fa-calendar"></i> Calendar View
                 </a>
-                {{-- <a class="btn btn-primary" href="{{ route('doctor.appointments.create') }}">
+                <a class="btn btn-primary" href="{{ route('doctor.appointments.create') }}">
                     <i class="fas fa-plus"></i> New Appointment
-                </a> --}}
+                </a>
             </div>
         </div>
 
@@ -96,8 +96,8 @@
                         </div>
 
                         <!-- Appointments List -->
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-striped table-hover w-100" id="appointmentsTable">
+                        <div class="table-responsive" style="overflow-x: auto;">
+                            <table class="table table-bordered table-striped table-hover w-100" id="appointmentsTable" style="min-width: 1000px;">
                                 <thead class="bg-light">
                                     <tr>
                                         <th>Date & Time</th>
@@ -172,7 +172,21 @@
                                                     <a href="{{ route('doctor.appointments.show', $appointment) }}"
                                                         class="btn btn-info btn-sm action-btn" title="View"
                                                         style="height: 25px;">
-                                                        <i class="fas fa-eye"></i>
+                                                        <i class="fas fa-eye text-white"></i>
+                                                    </a>
+
+                                                    <!-- Medical Report -->
+                                                    <a href="{{ route('doctor.medical-reports.create', ['appointment_id' => $appointment->id]) }}" 
+                                                       class="btn btn-sm action-btn text-white" title="Medical Report" 
+                                                       style="height: 25px; background-color: #f15832;">
+                                                        <i class="fas fa-file-medical"></i>
+                                                    </a>
+
+                                                    <!-- Prescription -->
+                                                    <a href="{{ route('doctor.prescriptions.create', ['appointment_id' => $appointment->id]) }}" 
+                                                       class="btn btn-warning btn-sm action-btn text-white" title="New Prescription" 
+                                                       style="height: 25px;">
+                                                        <i class="fas fa-prescription"></i>
                                                     </a>
 
                                                     <!-- Chat with patient -->
@@ -189,11 +203,11 @@
                                                         </a>
                                                     @endif
 
-                                                    {{-- <a href="{{ route('doctor.appointments.edit', $appointment) }}"
-                                                        class="btn btn-primary btn-sm action-btn" title="Edit"
+                                                    <a href="{{ route('doctor.appointments.edit', $appointment) }}"
+                                                        class="btn btn-warning btn-sm action-btn" title="Edit"
                                                         style="height: 25px;">
                                                         <i class="fas fa-edit"></i>
-                                                    </a> --}}
+                                                    </a> 
                                                     <form action="{{ route('doctor.appointments.destroy', $appointment) }}"
                                                         method="POST" class="d-inline">
                                                         @csrf
@@ -289,7 +303,8 @@
         $(document).ready(function() {
             // Initialize DataTable
             $('#appointmentsTable').DataTable({
-                responsive: true,
+                responsive: false, // Set to false to allow horizontal scrolling
+                scrollX: true,     // Enable horizontal scroll
                 dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
                 order: [
                     [0, 'asc']

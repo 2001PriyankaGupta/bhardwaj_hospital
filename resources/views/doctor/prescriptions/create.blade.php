@@ -20,14 +20,14 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="medical_record_id" class="form-label">Select Medical Record *</label>
-                                        <select class="form-control select2" id="medical_record_id" name="medical_record_id"
+                                        <label for="appointment_id" class="form-label">Select Appointment *</label>
+                                        <select class="form-control select2" id="appointment_id" name="appointment_id"
                                             required>
-                                            <option value="">Select Medical Record</option>
-                                            @foreach ($records as $record)
-                                                <option value="{{ $record->id }}"
-                                                    {{ request('record_id') == $record->id ? 'selected' : '' }}>
-                                                    {{ $record->patient->first_name }} {{ $record->patient->last_name }}
+                                            <option value="">Select Appointment</option>
+                                            @foreach ($appointments as $appointment)
+                                                <option value="{{ $appointment->id }}"
+                                                    {{ (isset($selectedAppointmentId) && $selectedAppointmentId == $appointment->id) ? 'selected' : '' }}>
+                                                    {{ $appointment->patient->first_name }} {{ $appointment->patient->last_name }} - {{ $appointment->appointment_date->format('d M Y') }}
                                                 </option>
                                             @endforeach
                                         </select>

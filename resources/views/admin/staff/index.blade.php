@@ -28,6 +28,9 @@
     .password-field {
         display: block;
     }
+    td{
+        font-size: 12px;
+    }
 </style>
 
 @section('content')
@@ -82,9 +85,13 @@
                                                     data-id="{{ $member->id }}">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
+                                                <a class="btn btn-sm btn-primary"
+                                                    href="{{ route('admin.staff.leaves', ['staff_id' => $member->id]) }}" title="View Leaves">
+                                                    <i class="fas fa-calendar-check"></i>
+                                                </a>
                                                 <a class="btn btn-sm btn-info shift-btn"
-                                                    href="{{ route('admin.shifts.index', $member->id) }}">
-                                                    <i class="fas fa-calendar-alt"></i> Shifts
+                                                    href="{{ route('admin.shifts.index', $member->id) }}" title="View Shifts">
+                                                    <i class="fas fa-calendar-alt"></i>
                                                 </a>
                                             </td>
                                         </tr>

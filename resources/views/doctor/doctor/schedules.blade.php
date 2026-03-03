@@ -3,6 +3,8 @@
 @section('title', 'Manage Schedule - ' . $doctor->full_name)
 
 @section('content')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
     :root {
         --primary-orange: #ff4900;

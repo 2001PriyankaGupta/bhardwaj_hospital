@@ -25,45 +25,97 @@ class PrescriptionController extends Controller
         return view($user->user_type.'.prescriptions.index', compact('prescriptions'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $user = Auth::user();
         $doctorId = auth()->id();
-        $records = PatientMedicalRecord::where('doctor_id', $doctorId)
-            ->whereDoesntHave('prescription')
+        $selectedAppointmentId = $request->appointment_id;
+
+        $appointments = Appointment::where('doctor_id', $doctorId)
             ->with('patient')
+            ->orderBy('appointment_date', 'desc')
             ->get();
 
-        return view($user->user_type.'.prescriptions.create', compact('records'));
+        return view($user->user_type.'.prescriptions.create', compact('appointments', 'selectedAppointmentId'));
     }
 
     public function store(Request $request)
     {
-        $user = Auth::user();
-        
+        try {
+            \Log::info('Entering Prescription Store', ['data' => $request->all()]);
+            
+            $user = Auth::user();
+            $appointmentId = $request->appointment_id;
+            
+            if (!$appointmentId) {
+                return response()->json(['success' => false, 'message' => 'Appointment ID is required.'], 422);
+            }
 
-        $record = PatientMedicalRecord::findOrFail($request->medical_record_id);
+            $appointment = Appointment::findOrFail($appointmentId);
+            
+            // Create or find associated medical record
+            $record = PatientMedicalRecord::where('appointment_id', $appointment->id)->first();
+            
+            if (!$record) {
+                // Ensure the record is created if missing since prescriptions table requires it
+                $record = PatientMedicalRecord::create([
+                    'appointment_id'  => $appointment->id,
+                    'patient_id'      => $appointment->patient_id,
+                    'doctor_id'       => $appointment->doctor_id,
+                    'record_date'     => now(),
+                    'report_title'    => 'Consultation Visit',
+                    'report_type'     => 'Digital',
+                    'notes'           => 'Auto-created during prescription generation.'
+                ]);
+            }
 
-        $prescription = Prescription::create([
-            'medical_record_id' => $request->medical_record_id,
-            'appointment_id' => $record->appointment_id,
-            'patient_id' => $record->patient_id,
-            'doctor_id' => $record->doctor_id,
-            'medication_details' => $request->medication_details,
-            'instructions' => $request->instructions,
-            'follow_up_advice' => $request->follow_up_advice,
-            'prescription_date' => now(),
-            'valid_until' => $request->valid_until,
-        ]);
+            $prescription = Prescription::create([
+                'medical_record_id' => $record->id,
+                'appointment_id' => $appointment->id,
+                'patient_id' => $appointment->patient_id,
+                'doctor_id' => $appointment->doctor_id,
+                'medication_details' => $request->medication_details,
+                'instructions' => $request->instructions,
+                'follow_up_advice' => $request->follow_up_advice,
+                'prescription_date' => now(),
+                'valid_until' => $request->valid_until,
+                'is_active' => true,
+            ]);
 
-        PatientNotify::create([
-            'patient_id' => $record ? $record->patient_id : null,
-            'title' => 'New Prescription Created',
-            'message' => 'Prescription for ' . ($record->patient->name ?? 'N/A') . ' has been created.',
-        ]);
+            PatientNotify::create([
+                'patient_id' => $appointment->patient_id,
+                'title' => 'New Prescription Created',
+                'message' => 'A new prescription has been created for your appointment on ' . ($appointment->appointment_date ? $appointment->appointment_date->format('d M Y') : now()->format('d M Y')),
+            ]);
 
-        return redirect()->route($user->user_type.'.prescriptions.index')
-            ->with('success', 'Prescription created successfully.');
+            \Log::info('Prescription saved successfully', ['id' => $prescription->id]);
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Prescription created successfully.',
+                    'data' => $prescription
+                ]);
+            }
+
+            return redirect()->route($user->user_type.'.prescriptions.index')
+                ->with('success', 'Prescription created successfully.');
+
+        } catch (\Exception $e) {
+            \Log::error('Prescription Store Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'input' => $request->all()
+            ]);
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            throw $e;
+        }
     }
 
     public function show($id)

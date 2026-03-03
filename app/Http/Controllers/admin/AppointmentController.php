@@ -4,6 +4,7 @@ namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+
 use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\User;
@@ -123,7 +124,13 @@ class AppointmentController extends Controller
         $patients = Patient::all();
         $doctors = Doctor::where('status', 'active')->get();
         $resources = Resource::where('is_available', true)->get();
-        return view($userType . '.appointment.create', compact('doctors', 'resources', 'patients'));
+        
+        $currentDoctor = null;
+        if ($userType === 'doctor') {
+            $currentDoctor = Doctor::where('user_id', $user->id)->first();
+        }
+        
+        return view($userType . '.appointment.create', compact('doctors', 'resources', 'patients', 'currentDoctor'));
     }
 
     /**
@@ -601,6 +608,14 @@ class AppointmentController extends Controller
     {
         $user = Auth::user();
         $userType = $user->user_type;
+
+        if ($userType === 'doctor') {
+            $doctor = Doctor::where('user_id', $user->id)->first();
+            if ($doctor) {
+                $request->merge(['doctor_id' => $doctor->id]);
+            }
+        }
+
         $request->validate([
             'doctor_id' => 'required|exists:doctors,id',
             'appointment_date' => 'required|date|after_or_equal:today',
@@ -729,7 +744,13 @@ class AppointmentController extends Controller
         $patients = Patient::all();
         $doctors = Doctor::where('status', 'active')->get();
         $resources = Resource::where('is_available', true)->get();
-        return view($userType . '.appointment.edit', compact('appointment', 'doctors', 'resources', 'patients'));
+        
+        $currentDoctor = null;
+        if ($userType === 'doctor') {
+            $currentDoctor = Doctor::where('user_id', $user->id)->first();
+        }
+        
+        return view($userType . '.appointment.edit', compact('appointment', 'doctors', 'resources', 'patients', 'currentDoctor'));
     }
 
     public function update(Request $request, Appointment $appointment)
@@ -737,6 +758,13 @@ class AppointmentController extends Controller
 
         $user = Auth::user();
         $userType = $user->user_type;
+
+        if ($userType === 'doctor') {
+            $doctor = Doctor::where('user_id', $user->id)->first();
+            if ($doctor) {
+                $request->merge(['doctor_id' => $doctor->id]);
+            }
+        }
 
         $request->validate([
             'doctor_id' => 'required|exists:doctors,id',

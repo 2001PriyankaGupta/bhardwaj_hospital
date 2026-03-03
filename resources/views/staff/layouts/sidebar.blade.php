@@ -153,6 +153,15 @@
             </li>
         @endif
 
+        <!-- Leave Management -->
+        <li class="{{ request()->routeIs('staff.leaves.*') ? 'mm-active' : '' }}">
+            <a href="{{ route('staff.leaves.index') }}"
+                class="waves-effect {{ request()->routeIs('staff.leaves.*') ? 'active-link' : '' }}">
+                <i class="fas fa-calendar-alt"></i>
+                Apply for Leave
+            </a>
+        </li>
+
         <!-- Patient Management -->
         @if ($user->hasPermission('view_management'))
             <li

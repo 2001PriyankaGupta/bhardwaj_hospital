@@ -116,4 +116,25 @@ class HealthTipController extends Controller
 
         return redirect()->route($Loginuser->user_type.'.healthtips.index')->with('success', 'Health Tip deleted successfully.');
     }
+
+    public function fetchLinkDetails(Request $request)
+    {
+        $request->validate([
+            'link' => 'required|url',
+        ]);
+
+        $metadata = $this->linkPreviewService->extractMetadata($request->link);
+
+        if ($metadata) {
+            return response()->json([
+                'success' => true,
+                'data' => $metadata
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Could not fetch metadata'
+        ], 404);
+    }
 }

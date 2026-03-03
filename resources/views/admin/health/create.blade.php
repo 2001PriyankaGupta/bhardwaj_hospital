@@ -356,28 +356,61 @@
             }
         }
 
-        // Check link for auto-thumbnail (conceptual - backend handles this)
+        // Check link for auto-thumbnail and details
         function checkLinkForThumbnail() {
             const linkInput = document.getElementById('link');
             const fileInput = document.getElementById('thumbnail_image');
             const previewLoading = document.getElementById('previewLoading');
             const preview = document.getElementById('thumbnailPreview');
+            const titleInput = document.getElementById('title');
+            const descriptionInput = document.getElementById('description');
 
-            // Only show loading if link is valid and no file is selected
             if (linkInput.value && !fileInput.files.length) {
                 previewLoading.style.display = 'block';
-                preview.innerHTML = `
-                <div class="thumbnail-icon">
-                    <i class="fas fa-link"></i>
-                </div>
-                <p class="text-muted mb-2">Will auto-generate thumbnail from link</p>
-                <small class="text-muted">Website: ${new URL(linkInput.value).hostname}</small>
-            `;
+                previewLoading.querySelector('p').textContent = 'Fetching link details...';
 
-                // Hide loading after 2 seconds
-                setTimeout(() => {
-                    previewLoading.style.display = 'none';
-                }, 2000);
+                $.ajax({
+                    url: "{{ route('admin.healthtips.fetch-details') }}",
+                    method: 'GET',
+                    data: {
+                        link: linkInput.value
+                    },
+                    success: function(response) {
+                        previewLoading.style.display = 'none';
+                        if (response.success) {
+                            if (!titleInput.value) {
+                                titleInput.value = response.data.title;
+                            }
+                            if (!descriptionInput.value || descriptionInput.value.length < 10) {
+                                descriptionInput.value = response.data.description;
+                                // Update char count
+                                document.getElementById('charCount').textContent = descriptionInput.value.length;
+                            }
+
+                            if (response.data.image_url) {
+                                preview.innerHTML = `
+                                    <img src="${response.data.image_url}" alt="Thumbnail Preview" class="img-fluid rounded">
+                                    <p class="text-muted mb-2">Auto-fetched Preview</p>
+                                    <small class="text-muted">Note: Custom upload will override this</small>
+                                `;
+                            }
+                            
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Details Fetched',
+                                text: 'Title and description have been automatically populated.',
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 3000
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        previewLoading.style.display = 'none';
+                        console.error('Failed to fetch details');
+                    }
+                });
             }
         }
 

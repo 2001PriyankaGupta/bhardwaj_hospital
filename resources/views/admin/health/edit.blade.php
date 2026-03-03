@@ -272,7 +272,15 @@
                                     Website Link
                                 </label>
                                 <input type="url" name="link" id="link" class="form-control"
-                                    value="{{ old('link', $healthTip->link) }}" placeholder="https://example.com/article">
+                                    value="{{ old('link', $healthTip->link) }}" placeholder="https://example.com/article"
+                                    onchange="checkLinkForThumbnail()">
+                                <div class="preview-loading mb-3" id="previewLoading" style="display:none;">
+                                    <div class="text-center p-3">
+                                        <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                                        <p class="mt-2">Fetching link details...</p>
+                                    </div>
+                                </div>
+                                <div id="thumbnailPreview" class="mt-3"></div>
                                 <small class="text-muted mt-1 d-block">
                                     <i class="fas fa-lightbulb me-1"></i>
                                     Update link to fetch new thumbnail (check regenerate option below).
@@ -421,6 +429,67 @@
                 });
             }
         });
+
+        // Check link for auto-thumbnail and details
+        function checkLinkForThumbnail() {
+            const linkInput = document.getElementById('link');
+            const fileInput = document.getElementById('thumbnail_image');
+            const previewLoading = document.getElementById('previewLoading');
+            const preview = document.getElementById('thumbnailPreview');
+            const titleInput = document.getElementById('title');
+            const descriptionInput = document.getElementById('description');
+
+            if (linkInput.value && !fileInput.files.length) {
+                previewLoading.style.display = 'block';
+
+                $.ajax({
+                    url: "{{ route('admin.healthtips.fetch-details') }}",
+                    method: 'GET',
+                    data: {
+                        link: linkInput.value
+                    },
+                    success: function(response) {
+                        previewLoading.style.display = 'none';
+                        if (response.success) {
+                            if (!titleInput.value) {
+                                titleInput.value = response.data.title;
+                            }
+                            if (!descriptionInput.value || descriptionInput.value.length < 10) {
+                                descriptionInput.value = response.data.description;
+                                // Update char count
+                                document.getElementById('charCount').textContent = descriptionInput.value.length;
+                            }
+
+                            if (response.data.image_url) {
+                                preview.innerHTML = `
+                                    <div class="alert alert-info">
+                                        <img src="${response.data.image_url}" alt="Thumbnail Preview" class="img-fluid rounded mb-2" style="max-height: 150px;">
+                                        <p class="mb-0 small">Fetched Preview (Will be saved as thumbnail if regenerate is checked)</p>
+                                    </div>
+                                `;
+                                if (document.getElementById('regenerate_thumbnail')) {
+                                    document.getElementById('regenerate_thumbnail').checked = true;
+                                }
+                            }
+                            
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Details Fetched',
+                                text: 'Title and description have been automatically populated.',
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 3000
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        previewLoading.style.display = 'none';
+                        console.error('Failed to fetch details');
+                    }
+                });
+            }
+        }
 
         // Auto-check regenerate if link is changed
         document.getElementById('link').addEventListener('change', function() {

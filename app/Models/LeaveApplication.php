@@ -10,7 +10,7 @@ class LeaveApplication extends Model
     use HasFactory;
 
     protected $fillable = [
-        'doctor_id', 'leave_type', 'start_date', 'end_date', 
+        'doctor_id', 'staff_id', 'applicant_type', 'leave_type', 'start_date', 'end_date', 
         'reason', 'status', 'admin_remarks', 'approved_by', 'approved_at'
     ];
 
@@ -23,6 +23,11 @@ class LeaveApplication extends Model
     public function doctor()
     {
         return $this->belongsTo(Doctor::class);
+    }
+
+    public function staff()
+    {
+        return $this->belongsTo(Staff::class);
     }
 
     public function approvedBy()

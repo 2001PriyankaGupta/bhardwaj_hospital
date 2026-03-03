@@ -26,6 +26,7 @@ use App\Http\Controllers\admin\ScheduleController;
 use App\Http\Controllers\admin\BannerController;
 use App\Http\Controllers\admin\HealthTipController;
 use App\Http\Controllers\admin\PaymentController;
+use App\Http\Controllers\admin\AdminNotificationController;
 
 
 Route::post('login', [AuthController::class, 'loginSubmit'])->name('login.submit');
@@ -151,6 +152,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/{health_tip}', [HealthTipController::class, 'edit'])->name('edit');
         Route::put('/{health_tip}', [HealthTipController::class, 'update'])->name('update');
         Route::delete('/{health_tip}', [HealthTipController::class, 'destroy'])->name('destroy');
+        Route::get('/fetch-details', [HealthTipController::class, 'fetchLinkDetails'])->name('fetch-details');
     });
 
      Route::prefix('banner')->name('banner.')->group(function () {
@@ -166,6 +168,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // Staff Management
     Route::resource('staff', StaffController::class);
+    Route::get('/staff-leaves', [StaffController::class, 'adminStaffLeaves'])->name('staff.leaves');
+    Route::put('/staff-leaves/{leave}/status', [StaffController::class, 'updateStaffLeaveStatus'])->name('staff.leaves.status.update');
     Route::get('/staff/{id}/shifts', [ShiftController::class, 'index'])->name('shifts.index');
     Route::post('/shifts', [ShiftController::class, 'store'])->name('shifts.store');
     Route::put('/shifts/{shift}', [ShiftController::class, 'update'])->name('shifts.update');
@@ -254,6 +258,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::prefix('payments')->name('payments.')->group(function () {
         Route::get('/', [PaymentController::class, 'index'])->name('index');
         Route::get('/{id}', [PaymentController::class, 'show'])->name('show');
+    });
+
+    // Admin Notifications
+    Route::prefix('admin-notifications')->name('admin-notifications.')->group(function () {
+        Route::get('/', [AdminNotificationController::class, 'index'])->name('index');
+        Route::post('/{id}/mark-read', [AdminNotificationController::class, 'markAsRead'])->name('mark-read');
+        Route::post('/mark-all-read', [AdminNotificationController::class, 'markAllAsRead'])->name('mark-all-read');
     });
 
     Route::post('payments/{id}/mark-paid', [PaymentController::class, 'markAsPaid'])

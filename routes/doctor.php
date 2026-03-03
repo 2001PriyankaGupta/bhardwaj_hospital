@@ -24,11 +24,11 @@ Route::middleware(['auth', 'doctor'])->group(function () {
     Route::post('/profile/update-profile', [ProfileController::class, 'updateAvatar'])->name('profile.update-avatar');
     Route::post('/profile/change-password', [ProfileController::class, 'changePassword'])->name('profile.change-password');
 
-    Route::resource('appointments', AppointmentController::class);
     Route::get('appointments/doctor-dates', [AppointmentController::class, 'getDoctorDates'])->name('appointments.doctor-dates');
     Route::get('appointments/doctor-slots', [AppointmentController::class, 'getDoctorSlots'])->name('appointments.doctor-slots');
     Route::get('appointments/slots/available', [AppointmentController::class, 'getAvailableSlots'])->name('appointments.slots.available');
     Route::get('appointments/resources/available', [AppointmentController::class, 'getAvailableResources'])->name('appointments.resources.available');
+    Route::resource('appointments', AppointmentController::class);
     Route::post('appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.status.update');
     Route::get('appointments-calendar', [AppointmentController::class, 'calendar'])->name('appointments.calendar');
 

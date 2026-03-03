@@ -482,8 +482,25 @@ class DoctorController extends Controller
                 'created_at' => now(),
             ]);
 
-            // You can add notification logic here
-            // Example: Send email notification to admin
+            // Notify all admins
+            $admins = \App\Models\User::where('user_type', 'admin')->get();
+            foreach ($admins as $admin) {
+                \App\Models\Notification::create([
+                    'user_id' => $admin->id,
+                    'type' => 'leave_application',
+                    'title' => 'Doctor Leave Applied',
+                    'meta_data' => json_encode([
+                        'leave_id' => $leave->id,
+                        'doctor_id' => $doctor->id,
+                        'doctor_name' => $doctor->first_name . ' ' . $doctor->last_name,
+                        'leave_type' => $leave->leave_type,
+                        'start_date' => $leave->start_date->format('Y-m-d'),
+                        'end_date' => $leave->end_date->format('Y-m-d'),
+                        'message' => "{$doctor->first_name} has applied for {$leave->leave_type} leave."
+                    ]),
+                    'sender_id' => $doctor->user->id
+                ]);
+            }
 
             return redirect()
                 ->route('doctor.doctors.leaves', $doctor)

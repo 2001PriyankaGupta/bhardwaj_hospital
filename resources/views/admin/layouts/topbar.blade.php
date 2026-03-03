@@ -44,6 +44,76 @@
                 </button>
             </div>
 
+            @php
+                $unreadNotifications = \App\Models\Notification::where('user_id', Auth::id())
+                    ->whereNull('read_at')
+                    ->latest()
+                    ->take(5)
+                    ->get();
+                $unreadCount = \App\Models\Notification::where('user_id', Auth::id())
+                    ->whereNull('read_at')
+                    ->count();
+            @endphp
+
+            <div class="dropdown d-inline-block">
+                <button type="button" class="btn header-item noti-icon waves-effect" id="page-header-notifications-dropdown"
+                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="mdi mdi-bell-outline"></i>
+                    @if($unreadCount > 0)
+                        <span class="badge bg-orange rounded-pill" style="background-color: #ff4900 !important;  ">{{ $unreadCount }}</span>
+                    @endif
+                </button>
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0 shadow-lg border-0"
+                    aria-labelledby="page-header-notifications-dropdown" style="border-radius: 12px; overflow: hidden;">
+                    <div class="p-3 bg-orange-soft" style="background-color: rgba(255, 73, 0, 0.05);">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h6 class="m-0 fw-bold text-orange"> Notifications </h6>
+                            </div>
+                            <div class="col-auto">
+                                <a href="{{ route('admin.admin-notifications.index') }}" class="small text-orange fw-bold" style="color:#ff4900 !important;"> View All</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div data-simplebar style="max-height: 230px;">
+                        @forelse($unreadNotifications as $notification)
+                            @php $meta = is_string($notification->meta_data) ? json_decode($notification->meta_data, true) : $notification->meta_data; @endphp
+                            <a href="{{ route('admin.admin-notifications.index') }}" class="text-reset notification-item d-block p-3 border-bottom-0">
+                                <div class="d-flex align-items-start">
+                                    <div class="flex-shrink-0 me-3">
+                                        <div class="avatar-xs">
+                                            <span class="avatar-title bg-orange rounded-circle font-size-16" style="background-color: #ff4900 !important; color: white !important;">
+                                                <i class="mdi mdi-bell-ring-outline"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1 font-size-14">{{ $notification->title }}</h6>
+                                        <div class="font-size-12 text-muted">
+                                            <p class="mb-1 text-truncate" style="max-width: 200px;">{{ $meta['message'] ?? 'New notification' }}</p>
+                                            <p class="mb-0 small"><i class="mdi mdi-clock-outline me-1"></i> {{ $notification->created_at->diffForHumans() }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        @empty
+                            <div class="p-4 text-center">
+                                <i class="mdi mdi-bell-off-outline d-block font-size-24 text-muted mb-2"></i>
+                                <p class="mb-0 text-muted small">No new notifications</p>
+                            </div>
+                        @endforelse
+                    </div>
+                    <div class="p-2 border-top d-grid bg-light">
+                        <form action="{{ route('admin.admin-notifications.mark-all-read') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-link font-size-14 text-center w-100  fw-bold text-decoration-none" style="color:#ff4900 !important;">
+                                <i class="mdi mdi-check-all me-1"></i> Mark all as read
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
 
             <div class="dropdown d-inline-block">
                 <button type="button" class="btn header-item waves-effect" id="page-header-user-dropdown"

@@ -30,7 +30,7 @@
                                         <select class="form-control " id="appointment_id" name="appointment_id" required>
                                             <option value="">Select Appointment</option>
                                             @foreach ($appointments as $appointment)
-                                                <option value="{{ $appointment->id }}">
+                                                <option value="{{ $appointment->id }}" {{ isset($selectedAppointmentId) && $selectedAppointmentId == $appointment->id ? 'selected' : '' }}>
                                                     {{ $appointment->patient->first_name }}
                                                     {{ $appointment->patient->last_name }} -
                                                     {{ $appointment->appointment_date->format('d M Y') }}

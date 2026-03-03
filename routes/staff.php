@@ -148,6 +148,7 @@ Route::middleware(['auth', 'staff'])->group(function () {
         Route::get('/{health_tip}', [HealthTipController::class, 'edit'])->name('edit');
         Route::put('/{health_tip}', [HealthTipController::class, 'update'])->name('update');
         Route::delete('/{health_tip}', [HealthTipController::class, 'destroy'])->name('destroy');
+        Route::get('/fetch-details', [HealthTipController::class, 'fetchLinkDetails'])->name('fetch-details');
     });
 
     Route::prefix('banner')->name('banner.')->group(function () {
@@ -250,7 +251,15 @@ Route::middleware(['auth', 'staff'])->group(function () {
     Route::post('payments/{id}/mark-paid', [PaymentController::class, 'markAsPaid'])
         ->name('payments.mark-paid');
 
+    // Leave Management for Staff
+    Route::prefix('leaves')->name('leaves.')->group(function () {
+        Route::get('/', [StaffController::class, 'leaves'])->name('index');
+        Route::get('/create', [StaffController::class, 'createLeave'])->name('create');
+        Route::post('/store', [StaffController::class, 'storeLeave'])->name('store');
+        Route::get('/{leave}/edit', [StaffController::class, 'editLeave'])->name('edit');
+        Route::put('/{leave}', [StaffController::class, 'updateLeave'])->name('update');
+        Route::delete('/{leave}', [StaffController::class, 'destroyLeave'])->name('destroy');
+    });
 
-    
 });
 

@@ -700,65 +700,67 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="prescriptionForm">
+                    <form id="prescriptionFormMain">
+                        <input type="hidden" name="appointment_id" value="{{ $appointment->id }}">
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">Patient Name</label>
-                                <input type="text" class="form-control"
+                                <input type="text" class="form-control bg-light"
                                     value="{{ $appointment->patient->first_name }} {{ $appointment->patient->last_name }}"
                                     readonly>
-                                readonly>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Date</label>
-                                <input type="text" class="form-control" value="{{ date('Y-m-d') }}" readonly>
+                                <label class="form-label">Valid Until</label>
+                                <input type="date" class="form-control" name="valid_until" value="{{ date('Y-m-d', strtotime('+7 days')) }}">
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Diagnosis</label>
-                            <textarea class="form-control" id="diagnosis" rows="3" placeholder="Enter diagnosis..."></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Medications</label>
+                            <label class="form-label fw-bold"><i class="fas fa-pills me-2"></i>Medication Details</label>
                             <div id="medicationsContainer">
-                                <div class="medication-row row mb-2">
-                                    <div class="col-md-5">
-                                        <input type="text" class="form-control" placeholder="Medication name">
-                                    </div>
-                                    <div class="col-md-3">
-                                        <input type="text" class="form-control" placeholder="Dosage">
-                                    </div>
-                                    <div class="col-md-3">
-                                        <input type="text" class="form-control" placeholder="Frequency">
-                                    </div>
-                                    <div class="col-md-1">
-                                        <button type="button" class="btn btn-sm btn-danger"
-                                            onclick="removeMedication(this)">
-                                            <i class="fas fa-times"></i>
-                                        </button>
+                                <div class="medication-row border p-3 mb-3 position-relative">
+                                    <div class="row g-2">
+                                        <div class="col-md-4">
+                                            <input type="text" class="form-control" name="medication_details[0][medicine]" placeholder="Medicine name" required>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <input type="text" class="form-control" name="medication_details[0][dosage]" placeholder="Dosage (e.g. 500mg)" required>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <select class="form-control" name="medication_details[0][frequency]" required>
+                                                <option value="Once daily">Once daily</option>
+                                                <option value="Twice daily">Twice daily</option>
+                                                <option value="Thrice daily">Thrice daily</option>
+                                                <option value="4 times daily">4 times daily</option>
+                                                <option value="Every 6 hours">Every 6 hours</option>
+                                                <option value="Every 8 hours">Every 8 hours</option>
+                                                <option value="As needed">As needed</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <input type="text" class="form-control" name="medication_details[0][duration]" placeholder="Duration (e.g. 7 days)" required>
+                                        </div>
+                                        <div class="col-md-1 text-end">
+                                            <button type="button" class="btn btn-danger btn-sm" onclick="removeMedication(this)" style="display:none;">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="addMedication()">
-                                <i class="fas fa-plus"></i> Add Medication
+                            <button type="button" class="btn btn-sm btn-success" onclick="addMedication()">
+                                <i class="fas fa-plus"></i> Add Another Medicine
                             </button>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Instructions</label>
-                            <textarea class="form-control" id="instructions" rows="3" placeholder="Enter instructions for the patient..."></textarea>
+                            <textarea class="form-control" name="instructions" rows="2" placeholder="Special instructions..."></textarea>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Follow-up Date</label>
-                            <input type="date" class="form-control" id="followUpDate">
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Additional Notes</label>
-                            <textarea class="form-control" id="additionalNotes" rows="2" placeholder="Any additional notes..."></textarea>
+                            <label class="form-label">Follow-up Advice</label>
+                            <textarea class="form-control" name="follow_up_advice" rows="2" placeholder="Follow-up advice..."></textarea>
                         </div>
                     </form>
                 </div>
@@ -769,7 +771,7 @@
                     <button type="button" class="btn btn-outline-primary">
                         <i class="fas fa-save"></i> Save Draft
                     </button>
-                    <button type="button" class="btn btn-primary" onclick="submitPrescription()">
+                    <button type="button" class="btn btn-primary" onclick="submitPrescription(event)">
                         <i class="fas fa-paper-plane"></i> Send to Patient
                     </button>
                 </div>
@@ -779,6 +781,8 @@
 @endsection
 
 @section('scripts')
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Agora SDK -->
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
     <script>
@@ -953,5 +957,113 @@
             const sidebar = document.querySelector('.patient-sidebar');
             sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
         };
+
+        // 💊 Prescription Functions
+        let medicineCount = 1;
+        function addMedication() {
+            const container = document.getElementById('medicationsContainer');
+            const newRow = `
+                <div class="medication-row border p-3 mb-3 position-relative">
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" name="medication_details[${medicineCount}][medicine]" placeholder="Medicine name" required>
+                        </div>
+                        <div class="col-md-2">
+                            <input type="text" class="form-control" name="medication_details[${medicineCount}][dosage]" placeholder="Dosage" required>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-control" name="medication_details[${medicineCount}][frequency]" required>
+                                <option value="Once daily">Once daily</option>
+                                <option value="Twice daily">Twice daily</option>
+                                <option value="Thrice daily">Thrice daily</option>
+                                <option value="4 times daily">4 times daily</option>
+                                <option value="Every 6 hours">Every 6 hours</option>
+                                <option value="Every 8 hours">Every 8 hours</option>
+                                <option value="As needed">As needed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <input type="text" class="form-control" name="medication_details[${medicineCount}][duration]" placeholder="Duration" required>
+                        </div>
+                        <div class="col-md-1 text-end">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removeMedication(this)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            container.insertAdjacentHTML('beforeend', newRow);
+            medicineCount++;
+        }
+
+        function removeMedication(btn) {
+            btn.closest('.medication-row').remove();
+        }
+
+        function submitPrescription(e) {
+            e.preventDefault();
+            const form = document.getElementById('prescriptionFormMain');
+            const submitBtn = e.currentTarget;
+            
+            // Basic validation
+            if (!form.reportValidity()) return;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+            const formData = new FormData(form);
+
+            fetch("{{ route('doctor.prescriptions.store') }}", {
+                method: "POST",
+                headers: {
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                    "Accept": "application/json"
+                },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Prescription saved and shared with patient.',
+                        timer: 2000
+                    });
+                    
+                    // Properly hide modal and cleanup backdrop
+                    const modalEl = document.getElementById('prescriptionModal');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) {
+                        modal.hide();
+                    }
+                    
+                    // Force cleanup of backdrop and body classes if they persist
+                    setTimeout(() => {
+                        const backdrop = document.querySelector('.modal-backdrop');
+                        if (backdrop) backdrop.remove();
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                        document.body.style.paddingRight = '';
+                    }, 500);
+
+                    form.reset();
+                } else {
+                    throw new Error(res.message || 'Something went wrong while saving.');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Failed to save prescription. Please try again.'
+                });
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send to Patient';
+            });
+        }
     </script>
 @endsection

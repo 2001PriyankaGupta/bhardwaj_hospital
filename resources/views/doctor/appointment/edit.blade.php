@@ -47,112 +47,176 @@
         box-shadow: none !important;
         border: none !important;
         width: 100% !important;
-        background: transparent !important;
+        max-width: 100% !important;
+        margin: 0 auto;
     }
 
-    .flatpickr-innerContainer, .flatpickr-rContainer {
-        width: 100% !important;
+    .flatpickr-months {
+        background: #fff !important;
+        margin-bottom: 10px !important;
+        padding: 10px 0;
+    }
+
+    .flatpickr-current-month {
+        font-size: 110% !important;
+        font-weight: 600 !important;
+        color: #1e293b !important;
+        padding: 0 !important;
+    }
+
+    .flatpickr-monthDropdown-months {
+        font-weight: 700 !important;
+        color: #1e293b !important;
+    }
+    
+    .numInputWrapper input {
+        font-weight: 700 !important;
+        color: #1e293b !important;
+    }
+
+    .flatpickr-weekdays {
+        background: #fff !important;
+        margin-bottom: 15px !important;
+    }
+
+    .flatpickr-weekday {
+        color: #64748b !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
     }
 
     .flatpickr-days {
         width: 100% !important;
-        max-width: none !important;
     }
 
     .dayContainer {
         width: 100% !important;
-        max-width: none !important;
-        min-width: 0 !important;
+        max-width: 100% !important;
+        justify-content: space-between !important;
     }
 
     .flatpickr-day {
+        margin: 0 !important;
+        width: 14.28% !important;
         max-width: none !important;
         height: 48px !important;
         line-height: 48px !important;
-        border-radius: 10px !important;
-        margin: 2px !important;
-        font-weight: 500;
+        border-radius: 8px !important;
+        color: #334155 !important;
+        font-weight: 500 !important;
+        font-size: 14px !important;
+        border: 1px solid transparent !important;
+    }
+
+    .flatpickr-day.prevMonthDay, 
+    .flatpickr-day.nextMonthDay {
+        color: #cbd5e1 !important;
+    }
+
+    .flatpickr-day:hover:not(.selected):not(.disabled) {
+        background: #f1f5f9 !important;
+        color: #1e293b !important;
     }
 
     .flatpickr-day.selected {
-        background: #f42b0dff !important;
-        border-color: #f42b0dff !important;
+        background: #ee3d0cff !important;
+        color: #fff !important;
+        border: none !important;
+        box-shadow: 0 4px 6px rgba(238, 61, 12, 0.3);
     }
 
     .flatpickr-day.today {
-        border-color: #f42b0dff !important;
+        border: 1px solid #ee3d0cff !important;
+        color: #ee3d0cff !important;
     }
 
+    .flatpickr-day.today.selected {
+        background: #ee3d0cff !important;
+        color: #fff !important;
+        border: none !important;
+    }
+
+    .flatpickr-day.disabled {
+        color: #e2e8f0 !important;
+        pointer-events: none;
+    }
+
+    /* Slot Styling */
     .slot-grid {
         display: grid;
-        grid-template-columns: 1fr;
-        gap: 10px;
-        max-height: 400px;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 12px;
+        max-height: 420px;
         overflow-y: auto;
-        padding-right: 5px;
-    }
-
-    .slot-grid::-webkit-scrollbar {
-        width: 4px;
-    }
-    .slot-grid::-webkit-scrollbar-thumb {
-        background: #ced4da;
-        border-radius: 10px;
+        padding: 5px;
     }
 
     .time-slot-btn {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 12px;
-        border-radius: 10px;
-        border: 1px solid #eef2f7;
+        padding: 10px 5px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
         background: #fff;
+        color: #334155;
+        font-size: 13px;
         font-weight: 600;
-        color: #495057;
+        text-align: center;
         cursor: pointer;
         transition: all 0.2s ease;
-        text-decoration: none !important;
+        position: relative;
     }
 
     .time-slot-btn:hover:not(.disabled) {
-        border-color: #f42b0dff;
-        background: #f8faff;
-        color: #f42b0dff;
-        transform: translateY(-2px);
+        border-color: #ee3d0cff;
+        color: #ee3d0cff;
+        background: #fff5f2;
     }
 
     .time-slot-btn.selected {
-        background: #f42b0dff;
+        background: #ee3d0cff;
         color: #fff;
-        border-color: #f42b0dff;
-        box-shadow: 0 4px 6px rgba(91, 115, 232, 0.2);
+        border-color: #ee3d0cff;
+        box-shadow: 0 4px 6px rgba(238, 61, 12, 0.2);
     }
-
-    .time-slot-btn.disabled {
-        background: #f8f9fa;
-        color: #adb5bd;
-        cursor: not-allowed;
-        border-color: #f1f3f5;
-        opacity: 0.6;
-    }
-
+    
     .section-title {
-        font-size: 1.1rem;
+        font-size: 16px;
         font-weight: 700;
         margin-bottom: 20px;
-        color: #343a40;
+        color: #1e293b;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
+    }
+    
+    .section-title i {
+        color: #ee3d0cff;
     }
 
-    .section-title i {
-        color: #f42b0dff;
+    .empty-state-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        min-height: 300px;
+        text-align: center;
+        color: #adb5bd;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        color: #e9ecef;
+    }
+
+    .empty-state-text {
+        font-size: 1rem;
+        max-width: 250px;
+        line-height: 1.5;
     }
 
     .text-orange {
-        color: #f15832;
+        color: #ee3d0cff;
     }
 </style>
 @endsection
@@ -181,20 +245,18 @@
                             @csrf
                             @method('PUT')
 
-                            <div class="row">
-                                <div class="col-md-12 mb-4">
-                                    <div class="form-group">
-                                        <label for="doctor_id" class="form-label fw-bold">Select Doctor <span class="text-danger">*</span></label>
-                                        <select name="doctor_id" id="doctor_id" class="form-select form-select-lg" required>
-                                            <option value="">Choose Doctor</option>
-                                            @foreach ($doctors as $doctor)
-                                                <option value="{{ $doctor->id }}"
-                                                    {{ old('doctor_id', $appointment->doctor_id) == $doctor->id ? 'selected' : '' }}>
-                                                    Dr. {{ $doctor->full_name }} - {{ $doctor->specialty->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="alert alert-light border-0 shadow-sm d-flex align-items-center p-3" style="background: #fff5f2; border-radius: 15px; border-left: 5px solid #ee3d0cff !important;">
+                                        <div class="avatar-sm bg-orange-soft text-orange rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="background: rgba(238, 61, 12, 0.1); width: 45px; height: 45px;">
+                                            <i class="fas fa-user-md fa-lg" style="color: #ee3d0cff;"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-bold text-dark">Appointment for Dr. {{ $currentDoctor->full_name ?? Auth::user()->name }}</h6>
+                                            <small class="text-muted">Specialty: {{ $currentDoctor->specialty->name ?? 'Medical Specialist' }}</small>
+                                        </div>
                                     </div>
+                                    <input type="hidden" name="doctor_id" id="doctor_id" value="{{ $currentDoctor->id ?? $appointment->doctor_id }}">
                                 </div>
                             </div>
 
@@ -210,7 +272,10 @@
                                             <div class="col-md-5 slots-wrapper">
                                                 <h5 class="section-title"><i class="fas fa-clock"></i> Update Time Slot</h5>
                                                 <div id="time-slots-grid" class="slot-grid">
-                                                    <!-- Slots loaded via AJAX -->
+                                                    <div class="empty-state-container">
+                                                        <i class="fas fa-calendar-check empty-state-icon"></i>
+                                                        <p class="empty-state-text">Select a date to view available time slots for your consultation</p>
+                                                    </div>
                                                 </div>
                                                 <input type="hidden" name="start_time" id="start_time" value="{{ substr($appointment->start_time, 0, 5) }}" required>
                                                 <input type="hidden" name="end_time" id="end_time" value="{{ substr($appointment->end_time, 0, 5) }}" required>
@@ -236,7 +301,7 @@
                                 <div class="col-md-6 mb-3">
                                     <div class="form-group">
                                         <label for="status" class="form-label fw-bold">Status <span class="text-danger">*</span></label>
-                                        <select name="status" id="status" class="form-select" required>
+                                        <select name="status" id="status12" class="form-select" required>
                                             <option value="scheduled" {{ old('status', $appointment->status) == 'scheduled' ? 'selected' : '' }}>Scheduled</option>
                                             <option value="confirmed" {{ old('status', $appointment->status) == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
                                             <option value="cancelled" {{ old('status', $appointment->status) == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
@@ -298,8 +363,8 @@
 
                             <div class="row mt-5">
                                 <div class="col-12 text-end">
-                                    <a href="{{ route('doctor.appointments.index') }}" class="btn btn-light btn-lg px-5 me-2">Cancel</a>
-                                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                                    <a href="{{ route('doctor.appointments.index') }}" class="btn btn-light btn-sm px-5 me-2">Cancel</a>
+                                    <button type="submit" class="btn btn-primary btn-sm px-5" style="background: #ee3d0cff; border-color: #ee3d0cff;">
                                         <i class="fas fa-save me-2"></i> Update Appointment
                                     </button>
                                 </div>
@@ -332,16 +397,25 @@
                 altInput: true,
                 altFormat: "F j, Y",
                 dateFormat: "Y-m-d",
-                disable: [
-                    function(date) {
-                        return true; // All dates disabled until doctor selected/loaded
-                    }
-                ],
+                locale: {
+                    firstDayOfWeek: 1
+                },
                 onChange: function(selectedDates, dateStr, instance) {
                     $('#appointment_date').val(dateStr);
                     loadTimeSlots(dateStr);
+                },
+                onReady: function() {
+                    $('.flatpickr-weekday').css('font-weight', '600');
                 }
             });
+
+            // Automatically load doctor availability on page load
+            const initialDoctorId = $('#doctor_id').val();
+            if(initialDoctorId) {
+                setTimeout(() => {
+                    $('#doctor_id').trigger('change');
+                }, 100);
+            }
 
             // ============ DOCTOR SELECTION HANDLER ============
             $('#doctor_id').change(function() {
@@ -417,9 +491,9 @@
                             const formattedDate = dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
                             
                             let slotHtml = `
-                                <div class="col-12 mb-3">
+                                <div style="grid-column: 1 / -1;" class="mb-3">
                                     <div class="d-flex align-items-center justify-content-between bg-light p-2 rounded">
-                                        <span class="text-primary fw-bold"><i class="fas fa-calendar-alt me-2"></i>${dayName}</span>
+                                        <span class="text-orange fw-bold"><i class="fas fa-calendar-alt me-2"></i>${dayName}</span>
                                         <span class="badge bg-white text-muted border">${formattedDate}</span>
                                     </div>
                                 </div>

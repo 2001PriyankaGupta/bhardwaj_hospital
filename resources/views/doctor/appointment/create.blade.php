@@ -2,160 +2,182 @@
 
 @section('title', 'Create Appointment')
 
-@section('css')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
-    .swal2-toast {
-        font-size: 12px !important;
-        padding: 6px 10px !important;
-        min-width: auto !important;
-        width: 220px !important;
-        line-height: 1.3em !important;
-    }
-
-    .swal2-toast .swal2-icon {
-        width: 24px !important;
-        height: 24px !important;
-        margin-right: 6px !important;
-    }
-
-    .swal2-toast .swal2-title {
-        font-size: 13px !important;
-    }
-
     /* Modern Appointment UI Styles */
     .appointment-picker-card {
-        border-radius: 15px;
+       
         overflow: hidden;
-        border: 1px solid #edf2f9;
-        box-shadow: 0 0.75rem 1.5rem rgba(18, 38, 63, 0.03);
+        border: 1px solid #e0e6ed;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        background: #fff;
+        
+        flex-wrap: wrap;
     }
 
     .calendar-wrapper {
-        padding: 20px;
+        padding: 24px !important;
         background: #fff;
+        border-right: 1px solid #e0e6ed;
     }
 
     .slots-wrapper {
-        padding: 20px;
-        background: #f9fbfd;
-        border-left: 1px solid #edf2f9;
+        padding: 24px !important;
+        background: #fcfcfc;
     }
 
+    /* Flatpickr Customization */
     .flatpickr-calendar {
         box-shadow: none !important;
         border: none !important;
         width: 100% !important;
-        background: transparent !important;
+        max-width: 100% !important;
+        margin: 0 auto;
     }
 
-    .flatpickr-innerContainer, .flatpickr-rContainer {
-        width: 100% !important;
+    .flatpickr-months {
+        background: #fff !important;
+        margin-bottom: 10px !important;
+        padding: 10px 0;
+    }
+
+    .flatpickr-current-month {
+        font-size: 110% !important;
+        font-weight: 600 !important;
+        color: #1e293b !important;
+        padding: 0 !important;
+    }
+
+    .flatpickr-monthDropdown-months {
+        font-weight: 700 !important;
+        color: #1e293b !important;
+    }
+    
+    .numInputWrapper input {
+        font-weight: 700 !important;
+        color: #1e293b !important;
+    }
+
+    .flatpickr-weekdays {
+        background: #fff !important;
+        margin-bottom: 15px !important;
+    }
+
+    .flatpickr-weekday {
+        color: #64748b !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
     }
 
     .flatpickr-days {
         width: 100% !important;
-        max-width: none !important;
     }
 
     .dayContainer {
         width: 100% !important;
-        max-width: none !important;
-        min-width: 0 !important;
+        max-width: 100% !important;
+        justify-content: space-between !important;
     }
 
     .flatpickr-day {
+        margin: 0 !important;
+        width: 14.28% !important;
         max-width: none !important;
         height: 48px !important;
         line-height: 48px !important;
-        border-radius: 10px !important;
-        margin: 2px !important;
-        font-weight: 500;
+        border-radius: 8px !important;
+        color: #334155 !important;
+        font-weight: 500 !important;
+        font-size: 14px !important;
+        border: 1px solid transparent !important;
+    }
+
+    .flatpickr-day.prevMonthDay, 
+    .flatpickr-day.nextMonthDay {
+        color: #cbd5e1 !important;
+    }
+
+    .flatpickr-day:hover:not(.selected):not(.disabled) {
+        background: #f1f5f9 !important;
+        color: #1e293b !important;
     }
 
     .flatpickr-day.selected {
-        background: #5b73e8 !important;
-        border-color: #5b73e8 !important;
+        background: #ee3d0cff !important;
+        color: #fff !important;
+        border: none !important;
+        box-shadow: 0 4px 6px rgba(238, 61, 12, 0.3);
     }
 
     .flatpickr-day.today {
-        border-color: #5b73e8 !important;
+        border: 1px solid #ee3d0cff !important;
+        color: #ee3d0cff !important;
     }
 
+    .flatpickr-day.today.selected {
+        background: #ee3d0cff !important;
+        color: #fff !important;
+        border: none !important;
+    }
+
+    .flatpickr-day.disabled {
+        color: #e2e8f0 !important;
+        pointer-events: none;
+    }
+
+    /* Slot Styling */
     .slot-grid {
         display: grid;
-        grid-template-columns: 1fr;
-        gap: 10px;
-        max-height: 400px;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 12px;
+        max-height: 420px;
         overflow-y: auto;
-        padding-right: 5px;
-    }
-
-    .slot-grid::-webkit-scrollbar {
-        width: 4px;
-    }
-    .slot-grid::-webkit-scrollbar-thumb {
-        background: #ced4da;
-        border-radius: 10px;
+        padding: 5px;
     }
 
     .time-slot-btn {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 12px;
-        border-radius: 10px;
-        border: 1px solid #eef2f7;
+        padding: 10px 5px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
         background: #fff;
+        color: #334155;
+        font-size: 13px;
         font-weight: 600;
-        color: #495057;
+        text-align: center;
         cursor: pointer;
         transition: all 0.2s ease;
-        text-decoration: none !important;
+        position: relative;
     }
 
     .time-slot-btn:hover:not(.disabled) {
-        border-color: #5b73e8;
-        background: #f8faff;
-        color: #5b73e8;
-        transform: translateY(-2px);
+        border-color: #ee3d0cff;
+        color: #ee3d0cff;
+        background: #fff5f2;
     }
 
     .time-slot-btn.selected {
-        background: #5b73e8;
+        background: #ee3d0cff;
         color: #fff;
-        border-color: #5b73e8;
-        box-shadow: 0 4px 6px rgba(91, 115, 232, 0.2);
+        border-color: #ee3d0cff;
+        box-shadow: 0 4px 6px rgba(238, 61, 12, 0.2);
     }
-
-    .time-slot-btn.disabled {
-        background: #f8f9fa;
-        color: #adb5bd;
-        cursor: not-allowed;
-        border-color: #f1f3f5;
-        opacity: 0.6;
-    }
-
+    
     .section-title {
-        font-size: 1.1rem;
+        font-size: 16px;
         font-weight: 700;
         margin-bottom: 20px;
-        color: #343a40;
+        color: #1e293b;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
     }
-
+    
     .section-title i {
-        color: #5b73e8;
-    }
-
-    .text-orange {
-        color: #f15832;
+        color: #ee3d0cff;
     }
 </style>
-@endsection
+
 
 @section('content')
     <div class="container-fluid mt-4">
@@ -180,21 +202,18 @@
                         <form action="{{ route('doctor.appointments.store') }}" method="POST" id="appointmentForm">
                             @csrf
 
-                            <div class="row">
-                                <div class="col-md-12 mb-4">
-                                    <div class="form-group">
-                                        <label for="doctor_id" class="form-label fw-bold">Select Doctor <span class="text-danger">*</span></label>
-                                        <select name="doctor_id" id="doctor_id" class="form-select form-select-lg" required>
-                                            <option value="">Choose Doctor</option>
-                                            @foreach ($doctors as $doctor)
-                                                <option value="{{ $doctor->id }}"
-                                                    {{ old('doctor_id', auth()->id()) == $doctor->id ? 'selected' : '' }}>
-                                                    Dr. {{ $doctor->full_name }} - {{ $doctor->specialty->name }}
-                                                    (₹{{ $doctor->consultation_fee }})
-                                                </option>
-                                            @endforeach
-                                        </select>
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="alert alert-light border-0 shadow-sm d-flex align-items-center p-3" style="background: #fff5f2; border-radius: 15px; border-left: 5px solid #ee3d0cff !important;">
+                                        <div class="avatar-sm bg-orange-soft text-orange rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="background: rgba(238, 61, 12, 0.1); width: 45px; height: 45px;">
+                                            <i class="fas fa-user-md fa-lg" style="color: #ee3d0cff;"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-bold text-dark">Appointment for Dr. {{ $currentDoctor->full_name ?? Auth::user()->name }}</h6>
+                                            <small class="text-muted">Specialty: {{ $currentDoctor->specialty->name ?? 'Medical Specialist' }}</small>
+                                        </div>
                                     </div>
+                                    <input type="hidden" name="doctor_id" id="doctor_id" value="{{ $currentDoctor->id ?? '' }}">
                                 </div>
                             </div>
 
@@ -205,14 +224,14 @@
                                             <div class="col-md-7 calendar-wrapper">
                                                 <h5 class="section-title"><i class="fas fa-calendar-day"></i> Select Date</h5>
                                                 <div id="inline-calendar"></div>
-                                                <input type="hidden" name="appointment_date" id="appointment_date" required>
+                                                <input type="hidden" name="appointment_date" id="appointment_date" value="{{ date('Y-m-d') }}" required>
                                             </div>
                                             <div class="col-md-5 slots-wrapper">
                                                 <h5 class="section-title"><i class="fas fa-clock"></i> Select Available Time</h5>
                                                 <div id="time-slots-grid" class="slot-grid">
-                                                    <div class="text-center py-5 text-muted invisible-on-load">
-                                                        <i class="fas fa-user-md fa-3x mb-3 opacity-25"></i>
-                                                        <p>Choose a doctor first</p>
+                                                    <div class="text-center py-5 text-muted" style="grid-column: span 2;">
+                                                        <i class="fas fa-calendar-day fa-3x mb-3 opacity-25"></i>
+                                                        <p>Select a doctor and date to view available slots</p>
                                                     </div>
                                                 </div>
                                                 <input type="hidden" name="start_time" id="start_time" required>
@@ -278,8 +297,8 @@
 
                             <div class="row mt-5">
                                 <div class="col-12 text-end">
-                                    <a href="{{ route('doctor.appointments.index') }}" class="btn btn-light btn-lg px-5 me-2">Cancel</a>
-                                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                                    <a href="{{ route('doctor.appointments.index') }}" class="btn btn-light btn-sm px-5 me-2">Cancel</a>
+                                    <button type="submit" class="btn btn-primary btn-sm px-5" style="background: #ee3d0cff; border-color: #ee3d0cff;">
                                         <i class="fas fa-calendar-check me-2"></i> Confirm Schedule
                                     </button>
                                 </div>
@@ -295,38 +314,67 @@
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         $(document).ready(function() {
             let fp;
             let availableDates = [];
-            const urlParams = new URLSearchParams(window.location.search);
-            const urlDate = urlParams.get('date');
             
-            if (urlDate) {
-                $('#appointment_date').val(urlDate);
+            // Set default date to today
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            $('#appointment_date').val(todayStr);
+            
+            // Check if Flatpickr is loaded
+            if (typeof flatpickr === 'undefined') {
+                console.error('Flatpickr library not loaded!');
+                $('#inline-calendar').html('<div class="alert alert-danger">Calendar library failed to load. Please refresh the page.</div>');
+                return;
             }
-            
-            // Initialize Flatpickr in inline mode
-            fp = flatpickr("#inline-calendar", {
-                inline: true,
-                minDate: "today",
-                defaultDate: urlDate || null,
-                altInput: true,
-                altFormat: "F j, Y",
-                dateFormat: "Y-m-d",
-                disable: [
-                    function(date) {
-                        // All dates disabled until doctor selected
-                        return true; 
-                    }
-                ],
-                onChange: function(selectedDates, dateStr, instance) {
-                    $('#appointment_date').val(dateStr);
-                    loadTimeSlots(dateStr);
-                }
-            });
 
+            try {
+                // Initialize Flatpickr with proper weekday display
+                fp = flatpickr("#inline-calendar", {
+                    inline: true,
+                    minDate: "today",
+                    defaultDate: today,
+                    altInput: true,
+                    altFormat: "F j, Y",
+                    dateFormat: "Y-m-d",
+                    locale: {
+                        firstDayOfWeek: 1 // Monday as first day of week
+                    },
+                    onChange: function(selectedDates, dateStr, instance) {
+                        $('#appointment_date').val(dateStr);
+                        if ($('#doctor_id').val()) {
+                            loadTimeSlots(dateStr);
+                        }
+                    },
+                    // Ensure proper weekdays
+                    onReady: function(selectedDates, dateStr, instance) {
+                        // Fix any potential display issues
+                        $('.flatpickr-weekday').each(function() {
+                            $(this).css('font-weight', '600');
+                        });
+                    }
+                });
+            } catch (e) {
+                console.error('Flatpickr init error:', e);
+                $('#inline-calendar').html('<div class="alert alert-danger">Error initializing calendar.</div>');
+            }
+
+            // Automatically load doctor availability on page load
+            const initialDoctorId = $('#doctor_id').val();
+            if(initialDoctorId) {
+                // We need to wait a tiny bit for Flatpickr to be fully ready
+                setTimeout(() => {
+                    $('#doctor_id').trigger('change');
+                }, 100);
+            }
+
+            // Success message handling
             @if (session('success'))
                 Swal.fire({
                     toast: true,
@@ -339,6 +387,7 @@
                 });
             @endif
 
+            // Error message handling
             @if (session('error'))
                 Swal.fire({
                     toast: true,
@@ -355,16 +404,16 @@
             $('#doctor_id').change(function() {
                 const doctorId = $(this).val();
                 
-                // Reset everything
-                $('#appointment_date').val('');
-                $('#start_time').val('');
-                $('#end_time').val('');
-                $('#time-slots-grid').html('<div class="text-center py-5 text-muted"><p>Please select a date</p></div>');
+                // Show loading state immediately to indicate activity
+                $('#time-slots-grid').html('<div class="text-center py-5" style="grid-column: span 2;"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Checking availability...</p></div>');
                 $('#slotDurationAlert').addClass('d-none');
                 
                 if (!doctorId) {
-                    fp.set('disable', [() => true]);
-                    $('#time-slots-grid').html('<div class="text-center py-5 text-muted"><p>Choose a doctor first</p></div>');
+                    if (fp) {
+                        fp.clear();
+                        fp.set('disable', [() => true]);
+                    }
+                    $('#time-slots-grid').html('<div class="text-center py-5 text-muted" style="grid-column: span 2;"><i class="fas fa-user-md fa-3x mb-3 opacity-25"></i><p>Select a doctor to view schedule</p></div>');
                     return;
                 }
 
@@ -372,7 +421,7 @@
                 
                 // Fetch available dates for the doctor
                 $.ajax({
-                    url: '{{ route('doctor.appointments.doctor-dates') }}',
+                    url: '{{ route("doctor.appointments.doctor-dates") }}',
                     method: 'GET',
                     data: { doctor_id: doctorId },
                     success: function(response) {
@@ -388,113 +437,150 @@
                                 }
                             ]);
                             
+                            // Determine which date to load:
+                            // 1. Currently selected date (if valid)
+                            // 2. Today (if valid)
+                            // 3. First available date
+                            
+                            const currentSelected = $('#appointment_date').val();
+                            const todayYMD = new Date().toISOString().split('T')[0];
+                            
+                            let dateToLoad = null;
+                            
+                            if (currentSelected && availableDates.includes(currentSelected)) {
+                                dateToLoad = currentSelected;
+                            } else if (availableDates.includes(todayYMD)) {
+                                dateToLoad = todayYMD;
+                            } else {
+                                // Default to first available date
+                                dateToLoad = availableDates[0];
+                            }
+                            
+                            if (dateToLoad) {
+                                fp.setDate(dateToLoad);
+                                $('#appointment_date').val(dateToLoad);
+                                loadTimeSlots(dateToLoad);
+                            } else {
+                                $('#time-slots-grid').html('<div class="text-center py-5 text-muted" style="grid-column: span 2;"><p>No available dates for this doctor</p></div>');
+                            }
+                            
                         } else {
                             fp.set('disable', [() => true]);
                             $('#dateLoadingMsg').text('No available dates found for this doctor.').addClass('text-danger');
+                            $('#time-slots-grid').html('<div class="text-center py-5 text-muted" style="grid-column: span 2;"><p>No available dates for this doctor</p></div>');
                         }
                     },
                     error: function() {
                         $('#dateLoadingMsg').text('Error loading dates').addClass('text-danger');
+                        $('#time-slots-grid').html('<div class="text-center py-5 text-danger" style="grid-column: span 2;"><p>Error connecting to server.</p></div>');
                     }
                 });
             });
-
-            // Trigger change if doctor is already selected (for pre-filled doctors)
-            if($('#doctor_id').val()) {
-                $('#doctor_id').trigger('change');
-            }
 
             // ============ LOAD SLOTS ============
             function loadTimeSlots(selectedDate) {
                 const doctorId = $('#doctor_id').val();
                 const grid = $('#time-slots-grid');
                 
-                if (!doctorId || !selectedDate) return;
+                if (!doctorId) {
+                    grid.html('<div class="text-center py-5 text-muted" style="grid-column: span 2;"><p>Please select a doctor first.</p></div>');
+                    return;
+                }
+                
+                if (!selectedDate) return;
 
-                grid.html('<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Loading slots...</p></div>');
+                // Show loading state
+                grid.html('<div class="text-center py-5" style="grid-column: span 2;"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Loading available slots...</p></div>');
+                
+                // Reset inputs
                 $('#start_time').val('');
                 $('#end_time').val('');
+                $('#slotDurationAlert').addClass('d-none');
+                $('.time-slot-btn').removeClass('selected');
 
                 $.ajax({
-                    url: '{{ route('doctor.appointments.doctor-slots') }}',
+                    url: '{{ route("doctor.appointments.doctor-slots") }}',
                     method: 'GET',
                     data: {
                         doctor_id: doctorId,
                         date: selectedDate
                     },
                     success: function(response) {
-                        if (response.slots && response.slots.length > 0) {
-                            const dateObj = new Date(selectedDate);
-                            const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
-                            const formattedDate = dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
-                            
-                            let slotHtml = `
-                                <div class="col-12 mb-3">
-                                    <div class="d-flex align-items-center justify-content-between bg-light p-2 rounded">
-                                        <span class="text-primary fw-bold"><i class="fas fa-calendar-alt me-2"></i>${dayName}</span>
-                                        <span class="badge bg-white text-muted border">${formattedDate}</span>
-                                    </div>
-                                </div>
-                            `;
-                            
-                            // Get current time for comparison if today
-                            const now = new Date();
-                            const todayStr = flatpickr.formatDate(now, "Y-m-d");
-                            const isToday = (selectedDate === todayStr);
-                            const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
-
-                            let visibleSlots = 0;
-                            response.slots.forEach(slot => {
-                                // Skip past slots if date is today
-                                if (isToday) {
-                                    const [h, m] = slot.start.split(':').map(Number);
-                                    const slotTotalMinutes = h * 60 + m;
-                                    if (slotTotalMinutes < currentTotalMinutes + 5) { // 5-minute buffer
-                                        return;
-                                    }
-                                }
-
-                                const disabled = !slot.available ? 'disabled' : '';
-                                const subText = !slot.available ? ' (Booked)' : '';
-                                const startTimeDisplay = slot.display.split(' - ')[0];
+                        try {
+                            if (response.slots && response.slots.length > 0) {
+                                // Formatting header
+                                const d = new Date(selectedDate);
+                                const dayName = d.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'UTC' }); 
+                                const formattedDate = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
                                 
-                                slotHtml += `
-                                    <div class="time-slot-btn ${disabled}" 
-                                         data-start="${slot.start}" 
-                                         data-end="${slot.end}" 
-                                         data-display="${startTimeDisplay}">
-                                        ${startTimeDisplay}${subText}
+                                let slotHtml = `
+                                    <div style="grid-column: 1 / -1;" class="mb-3">
+                                        <div class="d-flex align-items-center justify-content-between bg-light p-2 rounded">
+                                            <span class="text-orange fw-bold"><i class="fas fa-calendar-alt me-2"></i>${dayName}</span>
+                                            <span class="badge bg-white text-muted border">${formattedDate}</span>
+                                        </div>
                                     </div>
                                 `;
-                                visibleSlots++;
-                            });
+                                
+                                let visibleSlots = 0;
+                                response.slots.forEach(slot => {
+                                    const isBooked = !slot.available;
+                                    const disabledClass = isBooked ? 'disabled' : '';
+                                    const bookedText = isBooked ? ' <small class="text-danger ms-1">(Booked)</small>' : '';
+                                    
+                                    // Extract start - end for display
+                                    const parts = slot.display.split(' - ');
+                                    const startTimeDisplay = parts[0] || slot.start;
 
-                            if (visibleSlots === 0) {
-                                grid.html('<div class="text-center py-5 text-muted"><p>No future slots available for today.</p></div>');
+                                    slotHtml += `
+                                        <div class="time-slot-btn ${disabledClass}" 
+                                             data-start="${slot.start}" 
+                                             data-end="${slot.end}" >
+                                             ${startTimeDisplay}${bookedText}
+                                        </div>
+                                    `;
+                                    visibleSlots++;
+                                });
+
+                                if (visibleSlots === 0) {
+                                    grid.html('<div class="text-center py-5 text-muted" style="grid-column: span 2;"><div class="alert alert-info border-0 bg-light"><i class="fas fa-info-circle me-2"></i>No future slots available for this date.</div></div>');
+                                } else {
+                                    grid.html(slotHtml);
+                                }
                             } else {
-                                grid.html(slotHtml);
+                                // Explicit message from backend or empty slots
+                                const msg = response.message || 'No slots available for this date.';
+                                grid.html(`<div class="text-center py-5 text-muted" style="grid-column: span 2;"><p>${msg}</p></div>`);
                             }
-                        } else {
-                            grid.html('<div class="text-center py-5 text-muted"><p>No slots available for this date.</p></div>');
+                        } catch (err) {
+                            console.error("Error processing slots:", err);
+                            grid.html('<div class="text-center py-5 text-danger" style="grid-column: span 2;"><p>Error processing schedule data.</p></div>');
                         }
                     },
-                    error: function() {
-                        grid.html('<div class="text-center py-5 text-danger"><p>Error loading slots.</p></div>');
+                    error: function(xhr) {
+                        console.error(xhr);
+                        grid.html('<div class="text-center py-5 text-danger" style="grid-column: span 2;"><p>Error loading slots from server.</p></div>');
                     }
                 });
             }
 
             // ============ SLOT CLICK HANDLER ============
-            $(document).on('click', '.time-slot-btn:not(.disabled)', function() {
+            $(document).on('click', '.time-slot-btn', function() {
+                // Ignore if disabled
+                if ($(this).hasClass('disabled')) return;
+
+                // Toggle selection visual
                 $('.time-slot-btn').removeClass('selected');
                 $(this).addClass('selected');
                 
                 const start = $(this).data('start');
                 const end = $(this).data('end');
                 
+                // Set hidden inputs
                 $('#start_time').val(start);
                 $('#end_time').val(end);
                 
+                // Trigger duration calc
                 calculateSlotDuration(start, end);
             });
 
@@ -521,8 +607,20 @@
 
             // Form validation
             $('#appointmentForm').submit(function(e) {
+                const doctorId = $('#doctor_id').val();
                 const date = $('#appointment_date').val();
                 const startTime = $('#start_time').val();
+
+                if (!doctorId) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Selection Required',
+                        text: 'Please select a doctor.',
+                        confirmButtonColor: '#ee3d0cff'
+                    });
+                    return false;
+                }
 
                 if (!date || !startTime) {
                     e.preventDefault();
@@ -530,7 +628,7 @@
                         icon: 'warning',
                         title: 'Selection Required',
                         text: 'Please select both a date and a time slot.',
-                        confirmButtonColor: '#5b73e8'
+                        confirmButtonColor: '#ee3d0cff'
                     });
                     return false;
                 }

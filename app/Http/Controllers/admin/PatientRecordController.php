@@ -31,15 +31,17 @@ class PatientRecordController extends Controller
         return view($user->user_type.'.medical-reports.index', compact('records'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $user = Auth::user();
         $doctorId = Auth::id();
+        $selectedAppointmentId = $request->appointment_id;
+        
         $appointments = Appointment::where('doctor_id', $doctorId)
             ->with('patient')
             ->get();
 
-        return view($user->user_type.'.medical-reports.create', compact('appointments'));
+        return view($user->user_type.'.medical-reports.create', compact('appointments', 'selectedAppointmentId'));
     }
 
     public function store(Request $request)

@@ -52,6 +52,11 @@ class Staff extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function leaveApplications()
+    {
+        return $this->hasMany(LeaveApplication::class);
+    }
+
     protected static function boot()
     {
         parent::boot();
