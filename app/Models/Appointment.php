@@ -11,7 +11,7 @@ class Appointment extends Model
 
     protected $fillable = [
         'doctor_id', 'resource_id',
-        'patient_id', 'appointment_date','type', 'start_time', 'end_time',
+        'patient_id', 'patient_type', 'consultation_fee', 'appointment_date','type', 'start_time', 'end_time',
         'status', 'notes', 'cancellation_reason','queue_number'
     ];
 

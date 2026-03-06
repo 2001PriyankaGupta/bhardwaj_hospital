@@ -50,7 +50,8 @@
                         <p><strong>Email:</strong><br>{{ $doctor->email }}</p>
                         <p><strong>Phone:</strong><br>{{ $doctor->phone }}</p>
                         <p><strong>License No:</strong><br>{{ $doctor->license_number }}</p>
-                        <p><strong>Consultation Fee:</strong><br>₹{{ number_format($doctor->consultation_fee, 2) }}</p>
+                        <p><strong>New Patient Fee:</strong><br>₹{{ number_format($doctor->new_patient_fee, 2) }}</p>
+                        <p><strong>Old Patient Fee:</strong><br>₹{{ number_format($doctor->old_patient_fee, 2) }}</p>
                     </div>
                 </div>
             </div>

@@ -168,19 +168,32 @@
                             </div>
 
                             <div class="row mt-3">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="consultation_fee">Consultation Fee (₹) *</label>
+                                        <label for="new_patient_fee">New Patient Fee (₹) *</label>
                                         <input type="number" step="0.01"
-                                            class="form-control @error('consultation_fee') is-invalid @enderror"
-                                            id="consultation_fee" name="consultation_fee"
-                                            value="{{ old('consultation_fee', 0) }}" required>
-                                        @error('consultation_fee')
+                                            class="form-control @error('new_patient_fee') is-invalid @enderror"
+                                            id="new_patient_fee" name="new_patient_fee"
+                                            value="{{ old('new_patient_fee', 0) }}" required>
+                                        @error('new_patient_fee')
                                             <span class="invalid-feedback">{{ $message }}</span>
                                         @enderror
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="old_patient_fee">Old Patient Fee (₹) *</label>
+                                        <input type="number" step="0.01"
+                                            class="form-control @error('old_patient_fee') is-invalid @enderror"
+                                            id="old_patient_fee" name="old_patient_fee"
+                                            value="{{ old('old_patient_fee', 0) }}" required>
+                                        @error('old_patient_fee')
+                                            <span class="invalid-feedback">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <input type="hidden" name="consultation_fee" value="0">
+                                <div class="col-md-4">
                                     <div class="form-group">
                                         <label for="profile_image">Profile Image</label>
                                         <div class="custom-file">

@@ -63,6 +63,7 @@ class PaymentController extends Controller
 
             // Step 1: Get payment details from Razorpay
             $paymentResponse = Http::withBasicAuth($razorpayKey, $razorpaySecret)
+                ->withoutVerifying()
                 ->get("https://api.razorpay.com/v1/payments/{$request->payment_id}");
 
             if ($paymentResponse->failed()) {
@@ -101,6 +102,7 @@ class PaymentController extends Controller
                 $amountToCapture = $paymentData['amount'];
                 
                 $captureResponse = Http::withBasicAuth($razorpayKey, $razorpaySecret)
+                    ->withoutVerifying()
                     ->post("https://api.razorpay.com/v1/payments/{$request->payment_id}/capture", [
                         'amount' => $amountToCapture
                     ]);
@@ -299,6 +301,7 @@ class PaymentController extends Controller
             }
 
             $response = Http::withBasicAuth($razorpayKey, $razorpaySecret)
+                ->withoutVerifying()
                 ->get("https://api.razorpay.com/v1/payments/{$razorpayPaymentId}");
 
             if ($response->successful()) {

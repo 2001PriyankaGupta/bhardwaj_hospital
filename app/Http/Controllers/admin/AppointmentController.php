@@ -1029,6 +1029,8 @@ class AppointmentController extends Controller
             'resource_id' => 'nullable|exists:resources,id',
             'notes' => 'nullable|string',
             'type' => 'nullable|string|in:person,video',
+            'patient_type' => 'nullable|string|in:new,old',
+            'fee' => 'nullable|numeric',
             'payment_id' => 'nullable|exists:payments,id',
         ]);
 
@@ -1188,6 +1190,8 @@ class AppointmentController extends Controller
                 'start_time' => $startTime,
                 'end_time' => $endTime,
                 'patient_id' => $patientId,
+                'patient_type' => $request->patient_type,
+                'consultation_fee' => $request->fee,
                 'resource_id' => $resourceId,
                 'notes' => $request->notes,
                 'type' => $request->type // Added type field

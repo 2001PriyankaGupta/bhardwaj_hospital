@@ -11,8 +11,9 @@ class Doctor extends Model
     use HasFactory;
 
     protected $fillable = [
-        'first_name', 'user_id','last_name', 'email', 'phone', 'license_number', 'specialty_id', 'password',
+        'first_name', 'user_id', 'last_name', 'email', 'phone', 'license_number', 'specialty_id', 'password',
         'qualifications', 'experience', 'bio', 'profile_image', 'status', 'consultation_fee',
+        'new_patient_fee', 'old_patient_fee',
         'average_consultation_time', 'working_days', 'shift_start_time', 'shift_end_time', 'is_verified'
     ];
 
@@ -23,6 +24,8 @@ class Doctor extends Model
     protected $casts = [
         'working_days' => 'array',
         'consultation_fee' => 'decimal:2',
+        'new_patient_fee' => 'decimal:2',
+        'old_patient_fee' => 'decimal:2',
         'shift_start_time' => 'datetime:H:i',
         'shift_end_time' => 'datetime:H:i',
     ];

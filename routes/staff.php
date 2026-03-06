@@ -258,7 +258,17 @@ Route::middleware(['auth', 'staff'])->group(function () {
         Route::post('/store', [StaffController::class, 'storeLeave'])->name('store');
         Route::get('/{leave}/edit', [StaffController::class, 'editLeave'])->name('edit');
         Route::put('/{leave}', [StaffController::class, 'updateLeave'])->name('update');
-        Route::delete('/{leave}', [StaffController::class, 'destroyLeave'])->name('destroy');
+    Route::delete('/{leave}', [StaffController::class, 'destroyLeave'])->name('destroy');
+    });
+
+    // Chat Management
+    Route::prefix('chat')->name('chat.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\admin\ChatController::class, 'dashboard'])->name('dashboard');
+        Route::get('/conversation/{conversationId}', [\App\Http\Controllers\admin\ChatController::class, 'getConversation'])->name('get-conversation');
+        Route::post('/send-message', [\App\Http\Controllers\admin\ChatController::class, 'sendMessage'])->name('send-message');
+        Route::post('/assign', [\App\Http\Controllers\admin\ChatController::class, 'assignConversation'])->name('assign');
+        Route::post('/update-status/{conversationId}', [\App\Http\Controllers\admin\ChatController::class, 'updateStatus'])->name('update-status');
+        Route::get('/stats', [\App\Http\Controllers\admin\ChatController::class, 'getChatStats'])->name('stats');
     });
 
 });

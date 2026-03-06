@@ -22,25 +22,26 @@ class PatientRecordController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $doctorId = Auth::id();
+        $userId = Auth::user()->doctor_id ?? null;
         $records = PatientMedicalRecord::with(['patient', 'appointment'])
-            ->where('doctor_id', $doctorId)
+            ->where('doctor_id', $userId)
             ->orderBy('record_date', 'desc')
             ->get();
 
         return view($user->user_type.'.medical-reports.index', compact('records'));
     }
 
-    public function create(Request $request)
+   public function create(Request $request)
     {
         $user = Auth::user();
+        $userId = Auth::user()->doctor_id ?? null;
         $doctorId = Auth::id();
         $selectedAppointmentId = $request->appointment_id;
         
-        $appointments = Appointment::where('doctor_id', $doctorId)
+        $appointments = Appointment::where('doctor_id', $userId)
             ->with('patient')
             ->get();
-
+        // dd($appointments,$doctorId);
         return view($user->user_type.'.medical-reports.create', compact('appointments', 'selectedAppointmentId'));
     }
 

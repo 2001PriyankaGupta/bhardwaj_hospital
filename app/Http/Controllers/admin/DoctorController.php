@@ -200,6 +200,8 @@ class DoctorController extends Controller
             'specialty_id' => 'required|exists:specialties,id',
             'qualifications' => 'required|string',
             'consultation_fee' => 'required|numeric|min:0',
+            'new_patient_fee' => 'required|numeric|min:0',
+            'old_patient_fee' => 'required|numeric|min:0',
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'gender' => 'nullable|in:male,female,other',
             'age' => 'nullable|integer|min:1|max:120',
@@ -275,6 +277,8 @@ class DoctorController extends Controller
                 'specialty_id' => $request->specialty_id,
                 'qualifications' => $request->qualifications,
                 'consultation_fee' => $request->consultation_fee,
+                'new_patient_fee' => $request->new_patient_fee,
+                'old_patient_fee' => $request->old_patient_fee,
                 'profile_image' => $profileImagePath,
                 'user_id' => $user->id,
             ];
@@ -325,6 +329,8 @@ class DoctorController extends Controller
             'specialty_id' => 'required|exists:specialties,id',
             'qualifications' => 'required|string',
             'consultation_fee' => 'required|numeric|min:0',
+            'new_patient_fee' => 'required|numeric|min:0',
+            'old_patient_fee' => 'required|numeric|min:0',
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'gender' => 'nullable|in:male,female,other',
             'age' => 'nullable|integer|min:1|max:120',
@@ -394,6 +400,8 @@ class DoctorController extends Controller
                 'specialty_id' => $request->specialty_id,
                 'qualifications' => $request->qualifications,
                 'consultation_fee' => $request->consultation_fee,
+                'new_patient_fee' => $request->new_patient_fee,
+                'old_patient_fee' => $request->old_patient_fee,
                 'profile_image' => $profileImagePath,
                 'bio' => $request->bio,
             ];
@@ -887,6 +895,8 @@ class DoctorController extends Controller
             'specialty_name' => 'required|string|max:255',
             'qualifications' => 'required|string',
             'consultation_fee' => 'required|numeric|min:0',
+            'new_patient_fee' => 'required|numeric|min:0',
+            'old_patient_fee' => 'required|numeric|min:0',
             'bio' => 'nullable|string', // New bio field
             'experience' => 'required|integer|min:0', // New experience field (in years)
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -961,6 +971,8 @@ class DoctorController extends Controller
             'specialty_name' => 'sometimes|required|string|max:255',
             'qualifications' => 'sometimes|required|string',
             'consultation_fee' => 'sometimes|required|numeric|min:0',
+            'new_patient_fee' => 'sometimes|required|numeric|min:0',
+            'old_patient_fee' => 'sometimes|required|numeric|min:0',
             'bio' => 'nullable|string',
             'experience' => 'sometimes|required|integer|min:0',
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',

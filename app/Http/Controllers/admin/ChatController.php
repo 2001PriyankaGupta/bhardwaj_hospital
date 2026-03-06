@@ -25,14 +25,23 @@ class ChatController extends Controller
             'today_chats' => ChatConversation::whereDate('created_at', today())->count()
         ];
 
-        $conversations = ChatConversation::with(['patient', 'latestMessage', 'assignedTo'])
-            ->orderBy('last_message_at', 'desc')
-            ->paginate(20);
+        $conversations = ChatConversation::with(['patient', 'latestMessage', 'assignedTo', 'appointment.doctor'])
+            ->orderByRaw('COALESCE(last_message_at, created_at) DESC')
+            ->paginate(50);
 
-        $availableAgents = User::whereHas('roles', function($q) {
-                $q->whereIn('name', ['admin', 'doctor', 'support_staff']);
+        // Calculate unread count for each conversation (messages from patient not read by admin/staff)
+        $conversations->getCollection()->transform(function ($conv) {
+            $conv->unread_count = ChatMessage::where('conversation_id', $conv->conversation_id)
+                ->where('sender_type', 'patient')
+                ->whereNull('read_at')
+                ->count();
+            return $conv;
+        });
+
+        $availableAgents = User::whereHas('role', function($q) {
+                $q->whereIn('slug', ['admin', 'doctor', 'staff']);
             })
-            ->where('is_active', true)
+            ->where('status', 'active')
             ->get(['id', 'name', 'email', 'profile_picture']);
 
         return view('admin.chat.dashboard', compact('stats', 'conversations', 'availableAgents'));
@@ -50,6 +59,12 @@ class ChatController extends Controller
             $message->sender = $message->sender();
         });
 
+        // Mark messages as read
+        ChatMessage::where('conversation_id', $conversationId)
+            ->where('sender_type', 'patient')
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
+
         return response()->json([
             'success' => true,
             'conversation' => $conversation
@@ -61,8 +76,9 @@ class ChatController extends Controller
     {
         $request->validate([
             'conversation_id' => 'required|exists:chat_conversations,conversation_id',
-            'message' => 'required|string',
-            'message_type' => 'in:text,image,file'
+            'message' => 'required_without:attachment|string|nullable',
+            'message_type' => 'in:text,image,file',
+            'attachment' => 'nullable|file|max:10240'
         ]);
 
         $user = Auth::user();
@@ -73,17 +89,41 @@ class ChatController extends Controller
             return response()->json(['success' => false, 'message' => 'Conversation is closed'], 403);
         }
 
+        $uploadedAttachments = [];
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $uploadPath = public_path('uploads/message');
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
+            $fileName = uniqid() . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->move($uploadPath, $fileName);
+            
+            $uploadedAttachments[] = [
+                'original_name' => $file->getClientOriginalName(),
+                'file_name' => $fileName,
+                'url' => url('uploads/message/' . $fileName),
+                'mime_type' => $file->getMimeType(),
+                'size' => $file->getSize(),
+            ];
+            
+            // Auto-detect message type if not specified
+            if (!$request->message_type || $request->message_type === 'text') {
+                $mime = $file->getMimeType();
+                $request->merge(['message_type' => str_starts_with($mime, 'image/') ? 'image' : 'file']);
+            }
+        }
+
         $message = ChatMessage::create([
             'conversation_id' => $request->conversation_id,
-            'sender_type' => ($user->user_type === 'doctor') ? 'doctor' : 'admin',
+            'sender_type' => $user->user_type ?? 'admin',
             'sender_id' => $user->id,
             'message_type' => $request->message_type ?? 'text',
             'message' => $request->message,
+            'attachments' => !empty($uploadedAttachments) ? $uploadedAttachments : null,
             'delivered_at' => now()
         ]);
 
-        // Update conversation
-        $conversation = ChatConversation::where('conversation_id', $request->conversation_id)->first();
         $conversation->update([
             'last_message_at' => now(),
             'status' => 'active'

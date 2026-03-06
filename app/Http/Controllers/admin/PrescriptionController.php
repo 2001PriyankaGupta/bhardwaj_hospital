@@ -16,7 +16,8 @@ class PrescriptionController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $doctorId = auth()->id();
+        
+        $doctorId = auth()->user()->doctor_id ?? null;
         $prescriptions = Prescription::with(['patient', 'medicalRecord'])
             ->where('doctor_id', $doctorId)
             ->orderBy('prescription_date', 'desc')
@@ -28,7 +29,7 @@ class PrescriptionController extends Controller
     public function create(Request $request)
     {
         $user = Auth::user();
-        $doctorId = auth()->id();
+        $doctorId = auth()->user()->doctor_id ?? null;
         $selectedAppointmentId = $request->appointment_id;
 
         $appointments = Appointment::where('doctor_id', $doctorId)
@@ -121,8 +122,9 @@ class PrescriptionController extends Controller
     public function show($id)
     {
         $user = Auth::user();
+        
         $prescription = Prescription::with(['patient', 'doctor', 'medicalRecord'])
-            ->where('doctor_id', auth()->id())
+            ->where('doctor_id', auth()->user()->doctor_id ?? null)
             ->findOrFail($id);
 
         return view($user->user_type.'.prescriptions.show', compact('prescription'));
@@ -131,7 +133,7 @@ class PrescriptionController extends Controller
     public function edit($id)
     {
         $user = Auth::user();
-        $prescription = Prescription::where('doctor_id', auth()->id())
+        $prescription = Prescription::where('doctor_id', auth()->user()->doctor_id ?? null)
             ->findOrFail($id);
 
         return view($user->user_type.'.prescriptions.edit', compact('prescription'));
@@ -140,7 +142,7 @@ class PrescriptionController extends Controller
     public function update(Request $request, $id)
     {
         $user = Auth::user();
-        $prescription = Prescription::where('doctor_id', auth()->id())
+        $prescription = Prescription::where('doctor_id', auth()->user()->doctor_id ?? null)
             ->findOrFail($id);
 
         $request->validate([
@@ -174,7 +176,7 @@ class PrescriptionController extends Controller
 
     public function destroy($id)
     {
-        $prescription = Prescription::where('doctor_id', auth()->id())
+        $prescription = Prescription::where('doctor_id', auth()->user()->doctor_id ?? null)
             ->findOrFail($id);
 
         $prescription->delete();
@@ -188,7 +190,7 @@ class PrescriptionController extends Controller
     {
         $user = Auth::user();
         $prescription = Prescription::with(['patient', 'doctor', 'medicalRecord'])
-            ->where('doctor_id', auth()->id())
+            ->where('doctor_id', auth()->user()->doctor_id ?? null)
             ->findOrFail($id);
 
         $pdf = Pdf::loadView($user->user_type.'.prescriptions.pdf', compact('prescription'));
@@ -201,7 +203,7 @@ class PrescriptionController extends Controller
     {
         $user = Auth::user();
         $prescription = Prescription::with(['patient', 'doctor', 'medicalRecord'])
-            ->where('doctor_id', auth()->id())
+            ->where('doctor_id',auth()->user()->doctor_id ?? null)
             ->findOrFail($id);
 
         return view($user->user_type.'.prescriptions.print', compact('prescription'));

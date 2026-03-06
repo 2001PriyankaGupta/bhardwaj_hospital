@@ -269,5 +269,15 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::post('payments/{id}/mark-paid', [PaymentController::class, 'markAsPaid'])
         ->name('payments.mark-paid');
+
+    // Chat Management
+    Route::prefix('chat')->name('chat.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\admin\ChatController::class, 'dashboard'])->name('dashboard');
+        Route::get('/conversation/{conversationId}', [\App\Http\Controllers\admin\ChatController::class, 'getConversation'])->name('get-conversation');
+        Route::post('/send-message', [\App\Http\Controllers\admin\ChatController::class, 'sendMessage'])->name('send-message');
+        Route::post('/assign', [\App\Http\Controllers\admin\ChatController::class, 'assignConversation'])->name('assign');
+        Route::post('/update-status/{conversationId}', [\App\Http\Controllers\admin\ChatController::class, 'updateStatus'])->name('update-status');
+        Route::get('/stats', [\App\Http\Controllers\admin\ChatController::class, 'getChatStats'])->name('stats');
+    });
 });
 

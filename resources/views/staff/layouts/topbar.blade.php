@@ -1,3 +1,4 @@
+
 <header id="page-topbar">
     <div class="navbar-header">
         <div class="d-flex">
@@ -38,10 +39,19 @@
             </div>
 
 
-            <div class="dropdown d-none d-lg-inline-block ms-1">
-                <button type="button" class="btn header-item noti-icon waves-effect" data-toggle="fullscreen">
-                    <i class="mdi mdi-fullscreen"></i>
-                </button>
+            @php
+                $unreadChatCount = \App\Models\ChatMessage::where('sender_type', 'patient')
+                    ->whereNull('read_at')
+                    ->count();
+            @endphp
+
+            <div class="dropdown d-inline-block">
+                <a href="{{ route('staff.chat.dashboard') }}" class="btn header-item noti-icon waves-effect" style="padding-top: 14px;">
+                    <i class="mdi mdi-chat-processing-outline"></i>
+                    @if($unreadChatCount > 0)
+                        <span class="badge bg-danger rounded-pill">{{ $unreadChatCount }}</span>
+                    @endif
+                </a>
             </div>
 
 
@@ -95,3 +105,4 @@
         </div>
     </div>
 </header>
+

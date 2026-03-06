@@ -181,7 +181,7 @@
                                         <th width="15%">Contact</th>
                                         <th width="12%">Specialty</th>
                                         <th width="10%">License</th>
-                                        <th width="8%">Fee</th>
+                                        <th width="12%">Fees (New/Old)</th>
                                         <th width="10%">Status</th>
                                         <th width="20%" class="text-center">Actions</th>
                                     </tr>
@@ -217,9 +217,10 @@
                                                 </code>
                                             </td>
                                             <td>
-                                                <span class="font-weight-bold text-success">
-                                                    ₹{{ number_format($doctor->consultation_fee, 2) }}
-                                                </span>
+                                                <div class="text-xs">
+                                                    <span class="text-success fw-bold">N: ₹{{ number_format($doctor->new_patient_fee, 2) }}</span><br>
+                                                    <span class="text-info fw-bold">O: ₹{{ number_format($doctor->old_patient_fee, 2) }}</span>
+                                                </div>
                                             </td>
                                             <td>
                                                 @if ($doctor->status == 'active')
@@ -262,11 +263,11 @@
                                                     </a>
 
                                                     <!-- Schedule Button -->
-                                                    <a href="{{ route('staff.doctors.schedules', $doctor) }}"
+                                                    <!-- <a href="{{ route('staff.doctors.schedules', $doctor) }}"
                                                         class="btn btn-secondary btn-sm action-btn" style="height: 25px;"
                                                         title="Manage Schedule" data-toggle="tooltip">
                                                         <i class="fas fa-calendar-alt"></i>
-                                                    </a>
+                                                    </a> -->
 
                                                     <!-- Performance Button -->
                                                     <a href="{{ route('staff.doctors.performance', $doctor) }}"
