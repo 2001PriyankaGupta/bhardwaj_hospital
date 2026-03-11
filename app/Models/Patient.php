@@ -60,7 +60,7 @@ class Patient extends Model
 
     public function queues()
     {
-        return $this->hasMany(Queue::class);
+        return $this->hasMany(QueueManagement::class, 'patient_id');
     }
 
     // Generate patient ID

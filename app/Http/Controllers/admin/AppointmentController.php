@@ -791,11 +791,18 @@ class AppointmentController extends Controller
             $appointment->save();
             if ($appointment->status === 'confirmed') {
                 // Notify patient on appointment confirmation
-                PatientNotify::create([
-                    'patient_id' => $appointment->patient_id,
-                    'title' => 'Appointment Confirmed',
-                    'message' => 'Your appointment on ' . $appointment->appointment_date->format('d M Y') . ' with Dr. ' . ($appointment->doctor->name ?? 'N/A') . ' has been confirmed.',
-                ]);
+                $patient = \App\Models\Patient::find($appointment->patient_id);
+                if ($patient && $patient->user_id) {
+                    \App\Models\Notification::create([
+                        'user_id' => $patient->user_id,
+                        'type' => 'appointment',
+                        'title' => 'Appointment Confirmed',
+                        'meta_data' => [
+                            'message' => 'Your appointment on ' . ($appointment->appointment_date ? $appointment->appointment_date->format('d M Y') : 'requested date') . ' with Dr. ' . ($appointment->doctor->first_name ?? 'N/A') . ' ' . ($appointment->doctor->last_name ?? 'N/A') . ' has been confirmed.',
+                            'appointment_id' => $appointment->id
+                        ],
+                    ]);
+                }
             }
             DB::commit();
 
@@ -861,7 +868,7 @@ class AppointmentController extends Controller
         $message = '';
         switch ($request->status) {
             case 'confirmed':
-                $message = 'Your appointment on ' . $appointment->appointment_date->format('d M Y') . ' with Dr. ' . ($appointment->doctor->name ?? 'N/A') . ' has been confirmed.';
+                $message = 'Your appointment on ' . $appointment->appointment_date->format('d M Y') . ' with Dr. ' . ($appointment->doctor->first_name ?? 'N/A') . ' ' . ($appointment->doctor->last_name ?? 'N/A') . ' has been confirmed.';
                 break;
             case 'cancelled':
                 $message = 'Your appointment on ' . $appointment->appointment_date->format('d M Y') . ' has been cancelled.';

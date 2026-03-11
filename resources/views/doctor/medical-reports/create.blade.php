@@ -27,16 +27,21 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="appointment_id" class="form-label">Select Appointment *</label>
-                                        <select class="form-control " id="appointment_id" name="appointment_id" required>
+                                        <select class="form-control @error('appointment_id') is-invalid @enderror" id="appointment_id" name="appointment_id" required>
                                             <option value="">Select Appointment</option>
                                             @foreach ($appointments as $appointment)
-                                                <option value="{{ $appointment->id }}" {{ isset($selectedAppointmentId) && $selectedAppointmentId == $appointment->id ? 'selected' : '' }}>
+                                                <option value="{{ $appointment->id }}" {{ old('appointment_id', isset($selectedAppointmentId) ? $selectedAppointmentId : '') == $appointment->id ? 'selected' : '' }}>
                                                     {{ $appointment->patient->first_name }}
                                                     {{ $appointment->patient->last_name }} -
                                                     {{ $appointment->appointment_date->format('d M Y') }}
                                                 </option>
                                             @endforeach
                                         </select>
+                                        @error('appointment_id')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
                                     </div>
                                 </div>
 
@@ -52,24 +57,39 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="appointment_id" class="form-label">Report Title</label>
-                                        <input type="text" class="form-control" id="report_title" name="report_title"
-                                            placeholder="e.g., MRI Scan Report">
+                                        <label for="report_title" class="form-label">Report Title <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('report_title') is-invalid @enderror" id="report_title" name="report_title"
+                                            value="{{ old('report_title') }}" placeholder="e.g., MRI Scan Report">
+                                        @error('report_title')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
                                     </div>
                                 </div>
 
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="record_date" class="form-label">Report Type</label>
-                                        <input type="text" class="form-control" id="record_type" name="report_type"
-                                            placeholder="e.g., General Checkup">
+                                        <label for="record_type" class="form-label">Report Type <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('report_type') is-invalid @enderror" id="record_type" name="report_type"
+                                            value="{{ old('report_type') }}" placeholder="e.g., General Checkup">
+                                        @error('report_type')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
                                     </div>
                                 </div>
                             </div>
                             <div class="mb-3">
-                                <label for="symptoms" class="form-label">Upload Report </label>
-                                <input type="file" class="form-control" id="report_file" name="report_file"
+                                <label for="report_file" class="form-label">Upload Report <span class="text-danger">*</span></label>
+                                <input type="file" class="form-control @error('report_file') is-invalid @enderror" id="report_file" name="report_file"
                                     accept="image/*,application/pdf">
+                                @error('report_file')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
                                 <small class="text-muted">Only image and PDF files are allowed. Maximum size: 2MB.</small>
                             </div>
 

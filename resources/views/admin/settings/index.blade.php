@@ -218,31 +218,10 @@
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="#users"
+                                            <a href="#app_update"
                                                 class="settings-nav flex items-center p-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                                                <i class="fas fa-users mr-3"></i>
-                                                User Management
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="#backup"
-                                                class="settings-nav flex items-center p-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                                                <i class="fas fa-database mr-3"></i>
-                                                Backup & Restore
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="#logs"
-                                                class="settings-nav flex items-center p-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                                                <i class="fas fa-clipboard-list mr-3"></i>
-                                                System Logs
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="#security"
-                                                class="settings-nav flex items-center p-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                                                <i class="fas fa-shield-alt mr-3"></i>
-                                                Security Settings
+                                                <i class="fas fa-mobile-alt mr-3"></i>
+                                                App Update Control
                                             </a>
                                         </li>
                                     </ul>
@@ -303,181 +282,36 @@
                                 </div>
                             </div>
 
-                            <!-- User Management -->
-                            <div id="users" class="settings-section bg-white rounded-lg shadow">
+                            <!-- App Update Settings -->
+                            <div id="app_update" class="settings-section bg-white rounded-lg shadow">
                                 <div class="px-6 py-4 border-b border-gray-200">
                                     <h2 class="text-xl font-semibold text-gray-800">
-                                        <i class="fas fa-users mr-2"></i>User Management
-                                    </h2>
-                                </div>
-                                <div class="p-6">
-                                    <div class="space-y-4">
-                                        @foreach ($users as $user)
-                                            <div class="border border-gray-200 rounded-lg p-4">
-                                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-                                                    <div>
-                                                        <label class="block text-sm font-medium text-gray-700">Name</label>
-                                                        <input type="text" name="users[{{ $user->id }}][name]"
-                                                            value="{{ $user->name }}"
-                                                            class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-sm font-medium text-gray-700">Email</label>
-                                                        <input type="email" name="users[{{ $user->id }}][email]"
-                                                            value="{{ $user->email }}"
-                                                            class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                                                    </div>
-                                                    <div>
-                                                        <label class="block text-sm font-medium text-gray-700">New
-                                                            Password</label>
-                                                        <input type="password" name="users[{{ $user->id }}][password]"
-                                                            class="w-full px-3 py-2 border border-gray-300 rounded-md"
-                                                            placeholder="Leave blank to keep current">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Backup & Restore -->
-                            <div id="backup" class="settings-section bg-white rounded-lg shadow">
-                                <div class="px-6 py-4 border-b border-gray-200">
-                                    <h2 class="text-xl font-semibold text-gray-800">
-                                        <i class="fas fa-database mr-2"></i>Backup & Restore
-                                    </h2>
-                                </div>
-                                <div class="p-6">
-                                    <!-- Create Backup -->
-                                    <div class="mb-6">
-                                        <h3 class="text-lg font-medium text-gray-900 mb-4">Create New Backup</h3>
-                                        <form action="{{ route('admin.settings.backup.create') }}" method="POST"
-                                            class="flex gap-4">
-                                            @csrf
-                                            <input type="text" name="notes" placeholder="Backup notes..."
-                                                class="flex-1 px-3 py-2 border border-gray-300 rounded-md">
-                                            <button type="submit"
-                                                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                                                <i class="fas fa-plus mr-2"></i>Create Backup
-                                            </button>
-                                        </form>
-                                    </div>
-
-                                    <!-- Existing Backups -->
-                                    <div>
-                                        <h3 class="text-lg font-medium text-gray-900 mb-4">Existing Backups</h3>
-                                        <div class="space-y-3">
-                                            @foreach ($backups as $backup)
-                                                <div
-                                                    class="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                                                    <div>
-                                                        <div class="font-medium">{{ $backup->filename }}</div>
-                                                        <div class="text-sm text-gray-500">
-                                                            {{ $backup->created_at->format('M d, Y H:i') }} •
-                                                            {{ $backup->size_formatted }}
-                                                        </div>
-                                                    </div>
-                                                    <div class="flex space-x-2">
-                                                        <form
-                                                            action="{{ route('admin.settings.backup.restore', $backup->id) }}"
-                                                            method="POST">
-                                                            @csrf
-                                                            <button type="submit"
-                                                                class="bg-blue-500 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
-                                                                <i class="fas fa-redo mr-1"></i>Restore
-                                                            </button>
-                                                        </form>
-                                                        <button
-                                                            class="bg-red-500 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
-                                                            <i class="fas fa-trash mr-1"></i>Delete
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- System Logs -->
-                            <div id="logs" class="settings-section bg-white rounded-lg shadow">
-                                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                                    <h2 class="text-xl font-semibold text-gray-800">
-                                        <i class="fas fa-clipboard-list mr-2"></i>System Logs
-                                    </h2>
-                                    <form action="{{ route('admin.settings.logs.clear') }}" method="POST">
-                                        @csrf
-                                        <button type="submit"
-                                            class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-sm">
-                                            <i class="fas fa-trash mr-2"></i>Clear Old Logs
-                                        </button>
-                                    </form>
-                                </div>
-                                <div class="p-6">
-                                    <div class="space-y-3 max-h-96 overflow-y-auto">
-                                        @foreach ($logs as $log)
-                                            <div class="p-3 border border-gray-200 rounded-lg">
-                                                <div class="flex justify-between items-start mb-2">
-                                                    <span
-                                                        class="font-medium {{ $log->level == 'error' ? 'text-red-600' : ($log->level == 'warning' ? 'text-yellow-600' : 'text-green-600') }}">
-                                                        {{ strtoupper($log->level) }}
-                                                    </span>
-                                                    <span
-                                                        class="text-sm text-gray-500">{{ $log->created_at->format('M d, Y H:i:s') }}</span>
-                                                </div>
-                                                <div class="text-sm">{{ $log->message }}</div>
-                                                <div class="text-xs text-gray-500 mt-1">
-                                                    IP: {{ $log->ip_address }} • User: {{ $log->user_id ?? 'System' }}
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Security Settings -->
-                            <div id="security" class="settings-section bg-white rounded-lg shadow">
-                                <div class="px-6 py-4 border-b border-gray-200">
-                                    <h2 class="text-xl font-semibold text-gray-800">
-                                        <i class="fas fa-shield-alt mr-2"></i>Security Settings
+                                        <i class="fas fa-mobile-alt mr-2"></i>Mobile App Version Control
                                     </h2>
                                 </div>
                                 <div class="p-6 space-y-6">
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Max Login
-                                                Attempts</label>
-                                            <input type="number" name="max_login_attempts"
-                                                value="{{ old('max_login_attempts', $settings['security']['max_login_attempts']->value ?? '5') }}"
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Latest App Version</label>
+                                            <input type="text" name="latest_app_version"
+                                                value="{{ old('latest_app_version', $settings['app_update']['latest_app_version']->value ?? '1.0.0') }}"
+                                                placeholder="e.g. 1.0.1"
                                                 class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                            <p class="text-xs text-gray-500 mt-1">If this is different from the app version, a popup will show.</p>
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Session Timeout
-                                                (minutes)</label>
-                                            <input type="number" name="session_timeout"
-                                                value="{{ old('session_timeout', $settings['security']['session_timeout']->value ?? '120') }}"
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Play Store URL</label>
+                                            <input type="text" name="play_store_url"
+                                                value="{{ old('play_store_url', $settings['app_update']['play_store_url']->value ?? 'https://play.google.com/store/apps/details?id=com.bhardwaj.hospital') }}"
                                                 class="w-full px-3 py-2 border border-gray-300 rounded-md">
                                         </div>
                                     </div>
 
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Enable Two-Factor
-                                                Auth</label>
-                                            <select name="two_factor_auth"
-                                                class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                                                <option value="0">Disabled</option>
-                                                <option value="1">Enabled</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Password Expiry
-                                                (days)</label>
-                                            <input type="number" name="password_expiry"
-                                                value="{{ old('password_expiry', $settings['security']['password_expiry']->value ?? '90') }}"
-                                                class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                                        </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Update Message</label>
+                                        <textarea name="app_update_message" rows="3"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">{{ old('app_update_message', $settings['app_update']['app_update_message']->value ?? 'A new version of the app is available with latest features and improvements.') }}</textarea>
+                                        <p class="text-xs text-gray-500 mt-1">This message will be shown to users in the update popup.</p>
                                     </div>
                                 </div>
                             </div>

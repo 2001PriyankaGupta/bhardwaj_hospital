@@ -390,7 +390,7 @@
                     </select>
                 </div>
 
-                <div class="remember-forgot">
+                <!-- <div class="remember-forgot">
                     <div class="remember-me">
                         <input type="checkbox" id="remember" name="remember">
                         <label for="remember">Remember me</label>
@@ -398,7 +398,7 @@
                     <div class="forgot-password">
                         <a href="#" id="forgotPassword">Forgot Password?</a>
                     </div>
-                </div>
+                </div> -->
 
                 <button type="submit" class="login-btn">
                     <i class="fas fa-sign-in-alt"></i>

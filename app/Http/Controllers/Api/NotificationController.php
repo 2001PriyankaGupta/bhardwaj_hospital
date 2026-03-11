@@ -40,4 +40,17 @@ class NotificationController extends Controller
 
         return response()->json(['success' => true, 'message' => 'All notifications marked read']);
     }
+
+    public function unreadCount()
+    {
+        $user = auth('api')->user();
+        if (!$user) return response()->json(['unread_count' => 0]);
+
+        $count = Notification::where('user_id', $user->id)->whereNull('read_at')->count();
+
+        return response()->json([
+            'success' => true,
+            'unread_count' => $count
+        ]);
+    }
 }

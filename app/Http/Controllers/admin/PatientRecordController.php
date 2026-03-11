@@ -47,6 +47,20 @@ class PatientRecordController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'report_title' => 'required|string|max:255',
+            'report_type' => 'required|string|max:255',
+            'appointment_id' => 'required|exists:appointments,id',
+            'report_file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ], [
+            'report_title.required' => 'Please enter the report title.',
+            'report_type.required' => 'Please enter the report type.',
+            'appointment_id.required' => 'Please select an appointment.',
+            'report_file.required' => 'Please upload a report file.',
+            'report_file.mimes' => 'Only PDF, JPG, JPEG, and PNG files are allowed.',
+            'report_file.max' => 'File size cannot exceed 2MB.',
+        ]);
+
         $user = Auth::user();
         
 
@@ -72,11 +86,17 @@ class PatientRecordController extends Controller
         ]);
 
         // Notify patient on record creation
-        PatientNotify::create([
-            'patient_id' => $appointment ? $appointment->patient_id : null,
-            'title' => $request->report_title,
-            'message' => $request->report_type,
-        ]);
+        if ($appointment && $appointment->patient && $appointment->patient->user_id) {
+            \App\Models\Notification::create([
+                'user_id' => $appointment->patient->user_id,
+                'type' => 'report',
+                'title' => $request->report_title,
+                'meta_data' => [
+                    'message' => 'A new medical report (' . $request->report_type . ') has been added.',
+                    'record_id' => $record->id
+                ],
+            ]);
+        }
 
         return redirect()->route($user->user_type.'.medical-reports.index')
             ->with('success', 'Medical record created successfully.');
@@ -84,6 +104,17 @@ class PatientRecordController extends Controller
 
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'report_title' => 'required|string|max:255',
+            'report_type' => 'required|string|max:255',
+            'report_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ], [
+            'report_title.required' => 'Please enter the report title.',
+            'report_type.required' => 'Please enter the report type.',
+            'report_file.mimes' => 'Only PDF, JPG, JPEG, and PNG files are allowed.',
+            'report_file.max' => 'File size cannot exceed 2MB.',
+        ]);
+
         $user = Auth::user();
         $record = PatientMedicalRecord::where('doctor_id', $user->id)
             ->findOrFail($id);
@@ -100,11 +131,17 @@ class PatientRecordController extends Controller
         ]);
 
         // Notify patient on record update
-        PatientNotify::create([
-            'patient_id' => $record->patient_id,
-            'title' => $request->report_title,
-            'message' => $request->report_type,
-        ]);
+        if ($record->patient && $record->patient->user_id) {
+            \App\Models\Notification::create([
+                'user_id' => $record->patient->user_id,
+                'type' => 'report',
+                'title' => 'Updated: ' . $request->report_title,
+                'meta_data' => [
+                    'message' => 'A medical report has been updated.',
+                    'record_id' => $record->id
+                ],
+            ]);
+        }
 
         return redirect()->route($user->user_type.'.medical-reports.index')
             ->with('success', 'Medical record updated successfully.');

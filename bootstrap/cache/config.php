@@ -25,9 +25,9 @@
   array (
     'paths' => 
     array (
-      0 => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\resources\\views',
+      0 => 'D:\\react-native\\BH\\backend\\resources\\views',
     ),
-    'compiled' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\framework\\views',
+    'compiled' => 'D:\\react-native\\BH\\backend\\storage\\framework\\views',
   ),
   'app' => 
   array (
@@ -265,8 +265,8 @@
       'file' => 
       array (
         'driver' => 'file',
-        'path' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\framework/cache/data',
-        'lock_path' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\framework/cache/data',
+        'path' => 'D:\\react-native\\BH\\backend\\storage\\framework/cache/data',
+        'lock_path' => 'D:\\react-native\\BH\\backend\\storage\\framework/cache/data',
       ),
       'memcached' => 
       array (
@@ -349,7 +349,7 @@
       array (
         'driver' => 'sqlite',
         'url' => NULL,
-        'database' => 'hospital_jdbsjbd',
+        'database' => 'u799530173_bhardwaj_hsp',
         'prefix' => '',
         'foreign_key_constraints' => true,
         'busy_timeout' => NULL,
@@ -363,7 +363,7 @@
         'url' => NULL,
         'host' => '127.0.0.1',
         'port' => '3306',
-        'database' => 'hospital_jdbsjbd',
+        'database' => 'u799530173_bhardwaj_hsp',
         'username' => 'root',
         'password' => '',
         'unix_socket' => '',
@@ -383,7 +383,7 @@
         'url' => NULL,
         'host' => '127.0.0.1',
         'port' => '3306',
-        'database' => 'hospital_jdbsjbd',
+        'database' => 'u799530173_bhardwaj_hsp',
         'username' => 'root',
         'password' => '',
         'unix_socket' => '',
@@ -403,7 +403,7 @@
         'url' => NULL,
         'host' => '127.0.0.1',
         'port' => '3306',
-        'database' => 'hospital_jdbsjbd',
+        'database' => 'u799530173_bhardwaj_hsp',
         'username' => 'root',
         'password' => '',
         'charset' => 'utf8',
@@ -418,7 +418,7 @@
         'url' => NULL,
         'host' => '127.0.0.1',
         'port' => '3306',
-        'database' => 'hospital_jdbsjbd',
+        'database' => 'u799530173_bhardwaj_hsp',
         'username' => 'root',
         'password' => '',
         'charset' => 'utf8',
@@ -476,7 +476,7 @@
       'local' => 
       array (
         'driver' => 'local',
-        'root' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\app/private',
+        'root' => 'D:\\react-native\\BH\\backend\\storage\\app/private',
         'serve' => true,
         'throw' => false,
         'report' => false,
@@ -484,7 +484,7 @@
       'public' => 
       array (
         'driver' => 'local',
-        'root' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\app/public',
+        'root' => 'D:\\react-native\\BH\\backend\\storage\\app/public',
         'url' => 'http://127.0.0.1:8000/storage',
         'visibility' => 'public',
       ),
@@ -504,7 +504,7 @@
     ),
     'links' => 
     array (
-      'D:\\react-native\\bhardwaj-hospital-new\\backend\\public\\storage' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\app/public',
+      'D:\\react-native\\BH\\backend\\public\\storage' => 'D:\\react-native\\BH\\backend\\storage\\app/public',
     ),
   ),
   'jwt' => 
@@ -565,14 +565,14 @@
       'single' => 
       array (
         'driver' => 'single',
-        'path' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\logs/laravel.log',
+        'path' => 'D:\\react-native\\BH\\backend\\storage\\logs/laravel.log',
         'level' => 'debug',
         'replace_placeholders' => true,
       ),
       'daily' => 
       array (
         'driver' => 'daily',
-        'path' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\logs/laravel.log',
+        'path' => 'D:\\react-native\\BH\\backend\\storage\\logs/laravel.log',
         'level' => 'debug',
         'days' => 14,
         'replace_placeholders' => true,
@@ -637,7 +637,7 @@
       ),
       'emergency' => 
       array (
-        'path' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\logs/laravel.log',
+        'path' => 'D:\\react-native\\BH\\backend\\storage\\logs/laravel.log',
       ),
     ),
   ),
@@ -715,7 +715,7 @@
       'theme' => 'default',
       'paths' => 
       array (
-        0 => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\resources\\views/vendor/mail',
+        0 => 'D:\\react-native\\BH\\backend\\resources\\views/vendor/mail',
       ),
     ),
   ),
@@ -856,7 +856,7 @@
     'lifetime' => 120,
     'expire_on_close' => false,
     'encrypt' => false,
-    'files' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\framework/sessions',
+    'files' => 'D:\\react-native\\BH\\backend\\storage\\framework/sessions',
     'connection' => NULL,
     'table' => 'sessions',
     'store' => NULL,
@@ -880,10 +880,10 @@
     'convert_entities' => true,
     'options' => 
     array (
-      'font_dir' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\fonts',
-      'font_cache' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\fonts',
+      'font_dir' => 'D:\\react-native\\BH\\backend\\storage\\fonts',
+      'font_cache' => 'D:\\react-native\\BH\\backend\\storage\\fonts',
       'temp_dir' => 'C:\\Users\\hp\\AppData\\Local\\Temp',
-      'chroot' => 'D:\\react-native\\bhardwaj-hospital-new\\backend',
+      'chroot' => 'D:\\react-native\\BH\\backend',
       'allowed_protocols' => 
       array (
         'data://' => 
@@ -1041,7 +1041,7 @@
     ),
     'temporary_files' => 
     array (
-      'local_path' => 'D:\\react-native\\bhardwaj-hospital-new\\backend\\storage\\framework/cache/laravel-excel',
+      'local_path' => 'D:\\react-native\\BH\\backend\\storage\\framework/cache/laravel-excel',
       'local_permissions' => 
       array (
       ),

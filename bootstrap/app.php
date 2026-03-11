@@ -13,19 +13,19 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
         then: function () {
             // 1. Admin routes (with 'admin' prefix)
-            Route::middleware('web')
+            Route::middleware(['web', 'prevent-back-history'])
                 ->prefix('admin')
                 ->name('admin.')
                 ->group(base_path('routes/admin.php'));
 
             // 2. Doctor routes (with 'doctor' prefix)
-            Route::middleware('web')
+            Route::middleware(['web', 'prevent-back-history'])
                 ->prefix('doctor')
                 ->name('doctor.')
                 ->group(base_path('routes/doctor.php'));
 
             // 3. Staff routes (with 'staff' prefix)
-            Route::middleware('web')
+            Route::middleware(['web', 'prevent-back-history'])
                 ->prefix('staff')
                 ->name('staff.')
                 ->group(base_path('routes/staff.php'));
@@ -40,6 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'patient' => \App\Http\Middleware\PatientMiddleware::class,
             'api_auth' => \App\Http\Middleware\AuthMiddleware::class,
             'permission' => \App\Http\Middleware\CheckPermission::class,
+            'prevent-back-history' => \App\Http\Middleware\DisableBackHistory::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

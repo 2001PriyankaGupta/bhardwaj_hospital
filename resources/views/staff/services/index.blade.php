@@ -1,285 +1,288 @@
 @extends('staff.layouts.master')
 
+@push('styles')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <link href="{{ URL::asset('build/libs/admin-resources/jquery.vectormap/jquery-jvectormap-1.2.2.css') }}" rel="stylesheet">
 <link href="{{ URL::asset('build/libs/datatables.net-bs4/css/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
-<style>
-    /* Toast styling */
-    .swal2-toast {
-        font-size: 12px !important;
-        padding: 6px 10px !important;
-        min-width: auto !important;
-        width: 220px !important;
-        line-height: 1.3em !important;
-    }
+    @push('styles')
+    <style>
+        /* Toast styling */
+        .swal2-toast {
+            font-size: 12px !important;
+            padding: 6px 10px !important;
+            min-width: auto !important;
+            width: 220px !important;
+            line-height: 1.3em !important;
+        }
 
-    .swal2-toast .swal2-icon {
-        width: 24px !important;
-        height: 24px !important;
-        margin-right: 6px !important;
-    }
+        .swal2-toast .swal2-icon {
+            width: 24px !important;
+            height: 24px !important;
+            margin-right: 6px !important;
+        }
 
-    .swal2-toast .swal2-title {
-        font-size: 13px !important;
-    }
+        .swal2-toast .swal2-title {
+            font-size: 13px !important;
+        }
 
-    /* Custom CSS Variables */
-    :root {
-        --primary-color: #fd653f;
-        --primary-light: #ffeae5;
-        --secondary-color: #6c757d;
-        --success-color: #28a745;
-        --danger-color: #dc3545;
-        --light-color: #f8f9fa;
-        --dark-color: #343a40;
-        --border-color: #dee2e6;
-        --shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    }
+        /* Custom CSS Variables */
+        :root {
+            --primary-color: #fd653f;
+            --primary-light: #ffeae5;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --border-color: #dee2e6;
+            --shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
 
-    /* Dashboard Styles */
-    .dashboard-container {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 20px;
-    }
+        /* Dashboard Styles */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
 
-    .header-section {
-        background: linear-gradient(135deg, var(--primary-color) 0%, #fc7453 100%);
-        padding: 19px;
-        margin-bottom: 25px;
-        color: white;
-        box-shadow: var(--shadow);
-        border-radius: 10px;
-    }
+        .header-section {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #fc7453 100%);
+            padding: 19px;
+            margin-bottom: 25px;
+            color: white;
+            box-shadow: var(--shadow);
+            border-radius: 10px;
+        }
 
-    .header-section h1 {
-        font-weight: 700;
-        margin-bottom: 10px;
-    }
+        .header-section h1 {
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
 
-    .header-section p {
-        opacity: 0.9;
-        max-width: 700px;
-    }
+        .header-section p {
+            opacity: 0.9;
+            max-width: 700px;
+        }
 
-    .nav-tabs-container {
-        background-color: white;
-        border-radius: 10px;
-        padding: 10px;
-        margin-bottom: 25px;
-        box-shadow: var(--shadow);
-    }
+        .nav-tabs-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+        }
 
-    .nav-tabs {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        border: none;
-    }
-
-    .nav-tab {
-        padding: 12px 20px;
-        border-radius: 8px;
-        text-decoration: none;
-        color: var(--secondary-color);
-        font-weight: 500;
-        border: 1px solid var(--border-color);
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-    }
-
-    .nav-tab:hover {
-        background-color: #f3f4f6;
-        color: var(--dark-color);
-    }
-
-    .nav-tab.active {
-        background-color: var(--primary-light);
-        color: var(--primary-color);
-        border-color: var(--primary-color);
-    }
-
-    .nav-tab i {
-        margin-right: 8px;
-    }
-
-    .card {
-        border: none;
-        border-radius: 10px;
-        box-shadow: var(--shadow);
-        margin-bottom: 25px;
-    }
-
-    .card-header {
-        background-color: white;
-        border-bottom: 1px solid var(--border-color);
-        padding: 20px 25px;
-        border-radius: 10px 10px 0 0 !important;
-    }
-
-    .card-header h2 {
-        margin: 0;
-        font-weight: 600;
-        color: var(--dark-color);
-        display: flex;
-        align-items: center;
-    }
-
-    .card-header h2 i {
-        margin-right: 10px;
-        color: var(--primary-color);
-    }
-
-    .card-body {
-        padding: 25px;
-    }
-
-    .btn-primary {
-        background-color: var(--primary-color);
-        border-color: var(--primary-color);
-        padding: 10px 20px;
-        border-radius: 6px;
-        font-weight: 500;
-    }
-
-    .btn-primary:hover {
-        background-color: #e55a37;
-        border-color: #e55a37;
-    }
-
-    .status-badge {
-        padding: 6px 12px;
-        border-radius: 50px;
-        font-size: 0.75rem;
-        font-weight: 500;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 80px;
-    }
-
-    .status-active {
-        background-color: #e8f5e9;
-        color: #2e7d32;
-        border: 1px solid #c8e6c9;
-    }
-
-    .status-inactive {
-        background-color: #ffebee;
-        color: #c62828;
-        border: 1px solid #ffcdd2;
-    }
-
-    .action-btn {
-        transition: all 0.2s ease-in-out;
-        padding: 6px 12px;
-        border-radius: 6px;
-        font-size: 0.875rem;
-        font-weight: 500;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        margin-right: 8px;
-    }
-
-    .action-btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-
-    .btn-edit {
-        background-color: #e3f2fd;
-        color: #1565c0;
-        border: 1px solid #bbdefb;
-    }
-
-    .btn-delete {
-        background-color: #ffebee;
-        color: #c62828;
-        border: 1px solid #ffcdd2;
-    }
-
-    .table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-
-    .table thead th {
-        background-color: #f8f9fa;
-        border-bottom: 2px solid var(--border-color);
-        padding: 12px 15px;
-        font-weight: 600;
-        color: var(--dark-color);
-    }
-
-    .table tbody td {
-        padding: 15px;
-        border-bottom: 1px solid var(--border-color);
-        vertical-align: middle;
-    }
-
-    .table tbody tr:hover {
-        background-color: rgba(0, 0, 0, 0.02);
-    }
-
-    .table-responsive {
-        border-radius: 8px;
-        overflow: hidden;
-    }
-
-    /* Tab Content */
-    .tab-content {
-        display: none;
-    }
-
-    .tab-content.active {
-        display: block;
-    }
-
-    /* Feature item styling */
-    .feature-item {
-        display: flex;
-        align-items: center;
-        margin-bottom: 8px;
-    }
-
-    .feature-item input {
-        flex: 1;
-        margin-right: 8px;
-    }
-
-    .feature-item button {
-        flex-shrink: 0;
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
         .nav-tabs {
-            flex-direction: column;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            border: none;
         }
 
         .nav-tab {
-            width: 100%;
-            justify-content: center;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--secondary-color);
+            font-weight: 500;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-tab:hover {
+            background-color: #f3f4f6;
+            color: var(--dark-color);
+        }
+
+        .nav-tab.active {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .nav-tab i {
+            margin-right: 8px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 25px;
         }
 
         .card-header {
-            padding: 15px;
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 25px;
+            border-radius: 10px 10px 0 0 !important;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-weight: 600;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .card-header h2 i {
+            margin-right: 10px;
+            color: var(--primary-color);
         }
 
         .card-body {
+            padding: 25px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .btn-primary:hover {
+            background-color: #e55a37;
+            border-color: #e55a37;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 80px;
+        }
+
+        .status-active {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+
+        .status-inactive {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+
+        .action-btn {
+            transition: all 0.2s ease-in-out;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            margin-right: 8px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-edit {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            border: 1px solid #bbdefb;
+        }
+
+        .btn-delete {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .table thead th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid var(--border-color);
+            padding: 12px 15px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .table tbody td {
             padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover {
+            background-color: rgba(0, 0, 0, 0.02);
         }
 
         .table-responsive {
-            font-size: 0.875rem;
+            border-radius: 8px;
+            overflow: hidden;
         }
-    }
-</style>
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Feature item styling */
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .feature-item input {
+            flex: 1;
+            margin-right: 8px;
+        }
+
+        .feature-item button {
+            flex-shrink: 0;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .nav-tabs {
+                flex-direction: column;
+            }
+
+            .nav-tab {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .card-header {
+                padding: 15px;
+            }
+
+            .card-body {
+                padding: 15px;
+            }
+
+            .table-responsive {
+                font-size: 0.875rem;
+            }
+        }
+    </style>
+    @endpush
 
 
 @section('content')
@@ -372,8 +375,8 @@
                                                 method="POST" style="display:inline;">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="action-btn btn-delete"
-                                                    onclick="return confirm('Are you sure you want to delete this service?')">
+                                                <button type="button" class="action-btn btn-delete"
+                                                    onclick="return confirmDelete('Are you sure?', 'You want to delete this service?', this.closest('form'))">
                                                     <i class="fas fa-trash me-1"></i>
                                                 </button>
                                             </form>
@@ -426,7 +429,7 @@
                                         <td>{{ $counter++ }}</td>
                                         <td>{{ $rateCard->name }}</td>
                                         <td>{{ $rateCard->service->name ?? '' }}</td>
-                                        <td>{{ $rateCard->currency }} {{ number_format($rateCard->price, 2) }}</td>
+                                        <td>₹{{ number_format($rateCard->price, 2) }}</td>
                                         <td>{{ ucfirst($rateCard->billing_cycle) }}</td>
                                         <td>
                                             <span
@@ -493,7 +496,7 @@
                                     <tr>
                                         <td>{{ $counter++ }}</td>
                                         <td>{{ $package->name }}</td>
-                                        <td>{{ $package->currency }} {{ number_format($package->price, 2) }}</td>
+                                        <td>₹{{ number_format($package->price, 2) }}</td>
                                         <td>
                                             @php
                                                 $serviceIds = json_decode($package->included_services, true);
@@ -522,8 +525,8 @@
                                                 method="POST" style="display:inline;">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="action-btn btn-delete"
-                                                    onclick="return confirm('Are you sure you want to delete this package?')">
+                                                <button type="button" class="action-btn btn-delete"
+                                                    onclick="return confirmDelete('Are you sure?', 'You want to delete this package?', this.closest('form'))">
                                                     <i class="fas fa-trash me-1"></i>
                                                 </button>
                                             </form>
@@ -586,8 +589,7 @@
                                             @if ($discount->type == 'percentage')
                                                 {{ $discount->value }}%
                                             @else
-                                                {{ $discount->currency ?? 'USD' }}
-                                                {{ number_format($discount->value, 2) }}
+                                                ₹{{ number_format($discount->value, 2) }}
                                             @endif
                                         </td>
                                         <td>{{ ucfirst($discount->applicable_to) }}</td>
@@ -610,8 +612,8 @@
                                                 method="POST" style="display:inline;">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="action-btn btn-delete"
-                                                    onclick="return confirm('Are you sure you want to delete this discount?')">
+                                                <button type="button" class="action-btn btn-delete"
+                                                    onclick="return confirmDelete('Are you sure?', 'You want to delete this discount?', this.closest('form'))">
                                                     <i class="fas fa-trash me-1"></i>
                                                 </button>
                                             </form>
@@ -728,7 +730,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="rateCardPrice" class="form-label">Price</label>
                                 <div class="input-group">
-                                    <span class="input-group-text">$</span>
+                                    <span class="input-group-text">₹</span>
                                     <input type="number" step="0.01" class="form-control" id="rateCardPrice"
                                         name="price" required>
                                 </div>
@@ -813,7 +815,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="packagePrice" class="form-label">Price</label>
                                 <div class="input-group">
-                                    <span class="input-group-text">$</span>
+                                    <span class="input-group-text">₹</span>
                                     <input type="number" step="0.01" class="form-control" id="packagePrice"
                                         name="price" required>
                                 </div>
@@ -979,7 +981,25 @@
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
+        function confirmDelete(title, text, form) {
+            Swal.fire({
+                title: title,
+                text: text,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+            return false;
+        }
+
         let baseUrl = "{{ config('app.url') }}";
+
         $(document).ready(function() {
             @if (session('success'))
                 Swal.fire({
@@ -1404,27 +1424,36 @@
         }
 
         function deleteRateCard(id) {
-            if (confirm('Are you sure you want to delete this rate card?')) {
-                // Create a form and submit it
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `${baseUrl}/staff/rate-cards/${id}`;
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'You want to delete this rate card?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `${baseUrl}/staff/rate-cards/${id}`;
 
-                const csrfToken = document.createElement('input');
-                csrfToken.type = 'hidden';
-                csrfToken.name = '_token';
-                csrfToken.value = '{{ csrf_token() }}';
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
 
-                const methodField = document.createElement('input');
-                methodField.type = 'hidden';
-                methodField.name = '_method';
-                methodField.value = 'DELETE';
+                    const methodField = document.createElement('input');
+                    methodField.type = 'hidden';
+                    methodField.name = '_method';
+                    methodField.value = 'DELETE';
 
-                form.appendChild(csrfToken);
-                form.appendChild(methodField);
-                document.body.appendChild(form);
-                form.submit();
-            }
+                    form.appendChild(csrfToken);
+                    form.appendChild(methodField);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
         }
     </script>
 @endsection

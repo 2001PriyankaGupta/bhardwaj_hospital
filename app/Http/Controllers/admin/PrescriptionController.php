@@ -83,11 +83,19 @@ class PrescriptionController extends Controller
                 'is_active' => true,
             ]);
 
-            PatientNotify::create([
-                'patient_id' => $appointment->patient_id,
-                'title' => 'New Prescription Created',
-                'message' => 'A new prescription has been created for your appointment on ' . ($appointment->appointment_date ? $appointment->appointment_date->format('d M Y') : now()->format('d M Y')),
-            ]);
+            $patient = \App\Models\Patient::find($appointment->patient_id);
+            if ($patient && $patient->user_id) {
+                \App\Models\Notification::create([
+                    'user_id' => $patient->user_id,
+                    'type' => 'prescription',
+                    'title' => 'New Prescription Created',
+                    'meta_data' => [
+                        'message' => 'A new prescription has been created for your appointment on ' . ($appointment->appointment_date ? $appointment->appointment_date->format('d M Y') : now()->format('d M Y')),
+                        'appointment_id' => $appointment->id,
+                        'prescription_id' => $prescription->id
+                    ],
+                ]);
+            }
 
             \Log::info('Prescription saved successfully', ['id' => $prescription->id]);
 
@@ -164,11 +172,17 @@ class PrescriptionController extends Controller
             'is_active' => $request->has('is_active'),
         ]);
 
-        PatientNotify::create([
-            'patient_id' => $prescription->patient_id,
-            'title' => 'Prescription Updated',
-            'message' => 'Prescription for ' . ($prescription->patient->name ?? 'N/A') . ' has been updated.',
-        ]);
+        if ($prescription->patient && $prescription->patient->user_id) {
+            \App\Models\Notification::create([
+                'user_id' => $prescription->patient->user_id,
+                'type' => 'prescription',
+                'title' => 'Prescription Updated',
+                'meta_data' => [
+                    'message' => 'Prescription for ' . ($prescription->patient->first_name ?? 'N/A') . ' ' . ($prescription->patient->last_name ?? 'N/A') . ' has been updated.',
+                    'prescription_id' => $prescription->id
+                ],
+            ]);
+        }
 
         return redirect()->route($user->user_type.'.prescriptions.index')
             ->with('success', 'Prescription updated successfully.');
@@ -195,7 +209,7 @@ class PrescriptionController extends Controller
 
         $pdf = Pdf::loadView($user->user_type.'.prescriptions.pdf', compact('prescription'));
 
-        return $pdf->download('prescription-'.$prescription->id.'-'.$prescription->patient->name.'.pdf');
+        return $pdf->download('prescription-'.$prescription->id.'-'.$prescription->patient->first_name.'-'.$prescription->patient->last_name.'.pdf');
     }
 
     // Print Prescription

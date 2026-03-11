@@ -2,18 +2,23 @@
 namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Patient;
-use App\Models\User;
-use App\Models\MedicalRecord;
-use App\Models\PatientMedicalRecord;
-use App\Models\CommunicationLog;
 use App\Models\Appointment;
+use App\Models\CommunicationLog;
+use App\Models\Invoice;
+use App\Models\InvoiceItem;
+use App\Models\Patient;
+use App\Models\PatientMedicalRecord;
 use App\Models\PatientNotify;
+use App\Models\Payment;
+use App\Models\Prescription;
+use App\Models\QueueManagement;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 
 class PatientController extends Controller
@@ -250,6 +255,20 @@ class PatientController extends Controller
 
     public function storeMedicalRecord(Request $request, Patient $patient)
     {
+        $request->validate([
+            'report_title' => 'required|string|max:255',
+            'report_type' => 'required|string|max:255',
+            'record_date' => 'required|date',
+            'report_file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ], [
+            'report_title.required' => 'Please enter the record title.',
+            'report_type.required' => 'Please enter the report type.',
+            'record_date.required' => 'Please select the record date.',
+            'report_file.required' => 'Please upload a report file.',
+            'report_file.mimes' => 'Only PDF, JPG, JPEG, and PNG files are allowed.',
+            'report_file.max' => 'File size cannot exceed 2MB.',
+        ]);
+
         $loggedInUser = Auth::user();
         $filePath = null;
 
@@ -269,11 +288,17 @@ class PatientController extends Controller
         ]);
 
         // Notify patient on record creation
-        PatientNotify::create([
-            'patient_id' => $patient->id, // Use $patient->id directly
-            'title' => $request->report_title,
-            'message' => 'A new medical record has been added.', // Updated message
-        ]);
+        if ($patient->user_id) {
+            \App\Models\Notification::create([
+                'user_id' => $patient->user_id,
+                'type' => 'report',
+                'title' => $request->report_title,
+                'meta_data' => [
+                    'message' => 'A new medical record has been added.',
+                    'record_id' => $record->id
+                ],
+            ]);
+        }
 
         return back()->with('success', 'Medical record added successfully.');
     }
@@ -352,29 +377,58 @@ class PatientController extends Controller
         try {
             DB::beginTransaction();
 
-            // Check if patient has appointments
-            $appointmentCount = Appointment::where('patient_id', $patient->id)->count();
-            $medicalRecordCount = MedicalRecord::where('patient_id', $patient->id)->count();
+            // 1. Delete Invoices and their items
+            $invoiceIds = Invoice::where('patient_id', $patient->id)->pluck('id');
+            InvoiceItem::whereIn('invoice_id', $invoiceIds)->delete();
+            Invoice::where('patient_id', $patient->id)->delete();
 
-            // Optional: Add validation to prevent deletion if records exist
-            if ($appointmentCount > 0 || $medicalRecordCount > 0) {
-                return redirect()->back()->with('error',
-                    'Cannot delete patient. Patient has ' .
-                    ($appointmentCount > 0 ? $appointmentCount . ' appointment(s) ' : '') .
-                    ($medicalRecordCount > 0 ? $medicalRecordCount . ' medical record(s)' : '') .
-                    '. Please delete related records first.');
+            // 2. Delete Payments
+            Payment::where('patient_id', $patient->id)->delete();
+
+            // 3. Delete Prescriptions
+            Prescription::where('patient_id', $patient->id)->delete();
+
+            // 4. Delete Medical Records and their files
+            $medicalRecords = PatientMedicalRecord::where('patient_id', $patient->id)->get();
+            foreach ($medicalRecords as $record) {
+                if ($record->report_file && Storage::disk('public')->exists($record->report_file)) {
+                    Storage::disk('public')->delete($record->report_file);
+                }
+                $record->delete();
             }
 
-            // Delete patient
+            // 5. Delete Appointments
+            Appointment::where('patient_id', $patient->id)->delete();
+
+            // 6. Delete Communication Logs
+            CommunicationLog::where('patient_id', $patient->id)->delete();
+
+            // 7. Delete Patient Notifications
+            PatientNotify::where('patient_id', $patient->id)->delete();
+
+            // 8. Delete Queue Management records
+            QueueManagement::where('patient_id', $patient->id)->delete();
+
+            // 9. Delete User record if exists and is of type 'patient'
+            if ($patient->user) {
+                $patientUser = $patient->user;
+                // Only delete if it's the patient themselves
+                if ($patientUser->user_type === 'patient') {
+                    $patientUser->delete();
+                }
+            }
+
+            // 10. Delete Patient record
             $patient->delete();
 
             DB::commit();
 
-            return redirect()->route($user->user_type.'.patients.index')
-                ->with('success', 'Patient deleted successfully.');
+            return redirect()->route($user->user_type . '.patients.index')
+                ->with('success', 'Patient and all related records (appointments, medical records, etc.) deleted successfully.');
 
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Error deleting patient: ' . $e->getMessage());
 
             return redirect()->back()
                 ->with('error', 'Error deleting patient: ' . $e->getMessage());
@@ -390,7 +444,7 @@ class PatientController extends Controller
 
             Appointment::where('patient_id', $patient->id)->delete();
 
-            MedicalRecord::where('patient_id', $patient->id)->delete();
+            PatientMedicalRecord::where('patient_id', $patient->id)->delete();
 
             $patient->delete();
 
@@ -458,11 +512,18 @@ class PatientController extends Controller
             'report_file' => $filePath,
         ]);
 
-        PatientNotify::create([
-            'patient_id' => $record->patient_id,
-            'title' => 'Medical Record Updated: ' . $request->report_title,
-            'message' => 'Your medical record has been updated.',
-        ]);
+        $patient = \App\Models\Patient::find($record->patient_id);
+        if ($patient && $patient->user_id) {
+            \App\Models\Notification::create([
+                'user_id' => $patient->user_id,
+                'type' => 'report',
+                'title' => 'Medical Record Updated: ' . $request->report_title,
+                'meta_data' => [
+                    'message' => 'Your medical record has been updated.',
+                    'record_id' => $record->id
+                ],
+            ]);
+        }
 
         return redirect()->route($loggedInUser->user_type . '.patients.medical-records', $record->patient_id)
             ->with('success', 'Medical record updated successfully.');

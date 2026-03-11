@@ -39,7 +39,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <p><strong>Payment ID:</strong> #{{ $payment->id }}</p>
-                        <p><strong>Amount:</strong> {{ number_format($payment->amount, 2) }} {{ $payment->currency }}
+                        <p><strong>Amount:</strong> ₹{{ number_format($payment->amount, 2) }}
                         </p>
                         <p><strong>Status:</strong> <span
                                 class="badge bg-{{ $payment->status == 'completed' ? 'success' : ($payment->status == 'pending' ? 'warning' : 'secondary') }}">{{ ucfirst($payment->status) }}</span>

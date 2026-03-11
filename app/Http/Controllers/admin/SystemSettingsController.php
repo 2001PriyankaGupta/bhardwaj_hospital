@@ -17,7 +17,9 @@ class SystemSettingsController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $settings = SystemSetting::all()->groupBy('group');
+        $settings = SystemSetting::all()->groupBy('group')->map(function ($items) {
+            return $items->keyBy('key');
+        });
         $logs = SystemLog::latest()->take(50)->get();
         $backups = Backup::latest()->get();
         $users = User::all();
@@ -27,18 +29,30 @@ class SystemSettingsController extends Controller
 
     public function updateSettings(Request $request)
     {
-
         $data = $request->except(['_token', 'users']);
 
-        foreach ($data as $key => $value) {
+        // Group mapping for consistency
+        $groups = [
+            'latest_app_version' => 'app_update',
+            'play_store_url' => 'app_update',
+            'app_update_message' => 'app_update',
+            'max_login_attempts' => 'security',
+            'session_timeout' => 'security',
+            'two_factor_auth' => 'security',
+            'password_expiry' => 'security',
+        ];
 
+        foreach ($data as $key => $value) {
             if (is_array($value)) {
                 $value = json_encode($value);
             }
 
             SystemSetting::updateOrCreate(
                 ['key' => $key],
-                ['value' => $value]
+                [
+                    'value' => $value,
+                    'group' => $groups[$key] ?? 'general'
+                ]
             );
         }
 

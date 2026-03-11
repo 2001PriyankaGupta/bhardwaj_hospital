@@ -1,5 +1,6 @@
 @extends('admin.layouts.master')
 
+@push('styles')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -280,6 +281,7 @@
         }
     }
 </style>
+@endpush
 
 
 @section('content')
@@ -372,8 +374,8 @@
                                                 method="POST" style="display:inline;">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="action-btn btn-delete"
-                                                    onclick="return confirm('Are you sure you want to delete this service?')">
+                                                <button type="button" class="action-btn btn-delete"
+                                                    onclick="return confirmDelete('Are you sure?', 'You want to delete this service?', this.closest('form'))">
                                                     <i class="fas fa-trash me-1"></i>
                                                 </button>
                                             </form>
@@ -426,7 +428,7 @@
                                         <td>{{ $counter++ }}</td>
                                         <td>{{ $rateCard->name }}</td>
                                         <td>{{ $rateCard->service->name ?? '' }}</td>
-                                        <td>{{ $rateCard->currency }} {{ number_format($rateCard->price, 2) }}</td>
+                                        <td>₹{{ number_format($rateCard->price, 2) }}</td>
                                         <td>{{ ucfirst($rateCard->billing_cycle) }}</td>
                                         <td>
                                             <span
@@ -493,7 +495,7 @@
                                     <tr>
                                         <td>{{ $counter++ }}</td>
                                         <td>{{ $package->name }}</td>
-                                        <td>{{ $package->currency }} {{ number_format($package->price, 2) }}</td>
+                                        <td>₹{{ number_format($package->price, 2) }}</td>
                                         <td>
                                             @php
                                                 $serviceIds = json_decode($package->included_services, true);
@@ -522,8 +524,8 @@
                                                 method="POST" style="display:inline;">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="action-btn btn-delete"
-                                                    onclick="return confirm('Are you sure you want to delete this package?')">
+                                                <button type="button" class="action-btn btn-delete"
+                                                    onclick="return confirmDelete('Are you sure?', 'You want to delete this package?', this.closest('form'))">
                                                     <i class="fas fa-trash me-1"></i>
                                                 </button>
                                             </form>
@@ -586,8 +588,7 @@
                                             @if ($discount->type == 'percentage')
                                                 {{ $discount->value }}%
                                             @else
-                                                {{ $discount->currency ?? 'USD' }}
-                                                {{ number_format($discount->value, 2) }}
+                                                ₹{{ number_format($discount->value, 2) }}
                                             @endif
                                         </td>
                                         <td>{{ ucfirst($discount->applicable_to) }}</td>
@@ -610,8 +611,8 @@
                                                 method="POST" style="display:inline;">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="action-btn btn-delete"
-                                                    onclick="return confirm('Are you sure you want to delete this discount?')">
+                                                <button type="button" class="action-btn btn-delete"
+                                                    onclick="return confirmDelete('Are you sure?', 'You want to delete this discount?', this.closest('form'))">
                                                     <i class="fas fa-trash me-1"></i>
                                                 </button>
                                             </form>
@@ -730,7 +731,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="rateCardPrice" class="form-label">Price</label>
                                 <div class="input-group">
-                                    <span class="input-group-text">$</span>
+                                    <span class="input-group-text">₹</span>
                                     <input type="number" step="0.01" class="form-control" id="rateCardPrice"
                                         name="price" required>
                                 </div>
@@ -815,7 +816,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="packagePrice" class="form-label">Price</label>
                                 <div class="input-group">
-                                    <span class="input-group-text">$</span>
+                                    <span class="input-group-text">₹</span>
                                     <input type="number" step="0.01" class="form-control" id="packagePrice"
                                         name="price" required>
                                 </div>
@@ -981,7 +982,25 @@
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
+        function confirmDelete(title, text, form) {
+            Swal.fire({
+                title: title,
+                text: text,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+            return false;
+        }
+
         let baseUrl = "{{ config('app.url') }}";
+
         $(document).ready(function() {
             @if (session('success'))
                 Swal.fire({
@@ -1406,27 +1425,36 @@
         }
 
         function deleteRateCard(id) {
-            if (confirm('Are you sure you want to delete this rate card?')) {
-                // Create a form and submit it
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `${baseUrl}/admin/rate-cards/${id}`;
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'You want to delete this rate card?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `${baseUrl}/admin/rate-cards/${id}`;
 
-                const csrfToken = document.createElement('input');
-                csrfToken.type = 'hidden';
-                csrfToken.name = '_token';
-                csrfToken.value = '{{ csrf_token() }}';
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
 
-                const methodField = document.createElement('input');
-                methodField.type = 'hidden';
-                methodField.name = '_method';
-                methodField.value = 'DELETE';
+                    const methodField = document.createElement('input');
+                    methodField.type = 'hidden';
+                    methodField.name = '_method';
+                    methodField.value = 'DELETE';
 
-                form.appendChild(csrfToken);
-                form.appendChild(methodField);
-                document.body.appendChild(form);
-                form.submit();
-            }
+                    form.appendChild(csrfToken);
+                    form.appendChild(methodField);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
         }
     </script>
 @endsection

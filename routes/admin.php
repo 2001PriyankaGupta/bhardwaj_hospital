@@ -258,6 +258,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::prefix('payments')->name('payments.')->group(function () {
         Route::get('/', [PaymentController::class, 'index'])->name('index');
         Route::get('/{id}', [PaymentController::class, 'show'])->name('show');
+        Route::delete('/{id}', [PaymentController::class, 'destroy'])->name('destroy');
     });
 
     // Admin Notifications

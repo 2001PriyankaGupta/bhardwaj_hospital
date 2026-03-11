@@ -56,4 +56,22 @@ class PaymentController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Payment marked as paid']);
     }
+
+    public function destroy($id)
+    {
+        try {
+            $payment = Payment::findOrFail($id);
+            $payment->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Payment transaction deleted successfully.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete payment transaction.'
+            ], 500);
+        }
+    }
 }

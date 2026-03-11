@@ -52,17 +52,27 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="appointment_id" class="form-label">Report Title</label>
-                                        <input type="text" class="form-control" id="report_title" name="report_title"
-                                            placeholder="e.g., MRI Scan Report" value="{{ $record->report_title }}">
+                                        <label for="report_title" class="form-label">Report Title <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('report_title') is-invalid @enderror" id="report_title" name="report_title"
+                                            placeholder="e.g., MRI Scan Report" value="{{ old('report_title', $record->report_title) }}">
+                                        @error('report_title')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
                                     </div>
                                 </div>
 
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="record_date" class="form-label">Report Type</label>
-                                        <input type="text" class="form-control" id="record_type" name="report_type"
-                                            placeholder="e.g., General Checkup" value="{{ $record->report_type }}">
+                                        <label for="record_type" class="form-label">Report Type <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('report_type') is-invalid @enderror" id="record_type" name="report_type"
+                                            placeholder="e.g., General Checkup" value="{{ old('report_type', $record->report_type) }}">
+                                        @error('report_type')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
                                     </div>
                                 </div>
                             </div>
@@ -81,21 +91,28 @@
 
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="record_date" class="form-label">Record Date *</label>
-                                        <input type="date" class="form-control" id="record_date" name="record_date"
+                                        <label for="record_date" class="form-label">Record Date <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control @error('record_date') is-invalid @enderror" id="record_date" name="record_date"
                                             value="{{ old('record_date', \Carbon\Carbon::parse($record->record_date)->format('Y-m-d')) }}"
                                             required>
                                         @error('record_date')
-                                            <div class="text-danger">{{ $message }}</div>
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
                                         @enderror
                                     </div>
                                 </div>
                             </div>
 
                             <div class="mb-3">
-                                <label for="symptoms" class="form-label">Upload Report </label>
-                                <input type="file" class="form-control" id="report_file" name="report_file"
+                                <label for="report_file" class="form-label">Upload Report</label>
+                                <input type="file" class="form-control @error('report_file') is-invalid @enderror" id="report_file" name="report_file"
                                     accept="image/*,application/pdf">
+                                @error('report_file')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
                                 <small class="text-muted">Only image and PDF files are allowed. Maximum size: 2MB.</small>
                             </div>
 

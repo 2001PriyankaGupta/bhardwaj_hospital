@@ -177,16 +177,16 @@ class AdminAuthController extends Controller
             return response()->json([
                 'status' => 'false',
                 'message' => 'Email not registered',
-                'error' => 'This email is not registered. Please register first.'
+                'error' => 'This email is not registered. Please sign up first before attempting to login.'
             ], 404);
         }
 
-      
-        if ($user->is_admin == 1) {
+        // Block non-patient users (Doctors, Admins, etc.) from App Login
+        if ($user->user_type !== 'patient' || $user->is_admin == 1) {
             return response()->json([
                 'status' => 'false',
-                'message' => 'Admin login restricted',
-                'error' => 'This account must login through the admin panel.'
+                'message' => 'Access Restricted',
+                'error' => 'Only patient accounts are authorized for app login.'
             ], 403);
         }
         if (strtolower($user->email) == 'anupsharma12koa@gmail.com') {

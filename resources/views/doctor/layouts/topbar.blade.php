@@ -4,12 +4,10 @@
 
             <!-- LOGO -->
             <div class="navbar-brand-box">
-                <a href="#" target="_blank" class="logo logo-dark">
+                <a href="{{ route('doctor.dashboard') }}" class="logo logo-dark">
                     <h3 style="color: white;margin-top: 9px; font-size: 20px; font-weight: 700;">Bhardwaj Hospital</h3>
                     <p style="color: rgba(255, 255, 255, 0.8);margin: 5px 0 0 0; font-size: 12px;">Management System</p>
                 </a>
-
-
             </div>
 
             <button type="button" class="btn btn-sm px-3 font-size-24 header-item waves-effect" id="vertical-menu-btn">
@@ -60,6 +58,10 @@
                 </button>
                 <div class="dropdown-menu dropdown-menu-end">
                     <!-- item-->
+                    <a class="dropdown-item" href="{{ route('doctor.dashboard') }}">
+                        <i class="mdi mdi-view-dashboard-outline font-size-16 align-middle me-1"></i>
+                        Dashboard
+                    </a>
                     <a class="dropdown-item" href="{{ route('doctor.profile') }}">
                         <i class="mdi mdi-account-circle-outline font-size-16 align-middle me-1"></i>
                         Profile

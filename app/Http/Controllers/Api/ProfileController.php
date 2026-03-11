@@ -35,6 +35,7 @@ class ProfileController extends Controller
             'name' => 'sometimes|string|max:255',
             'gender' => 'sometimes|in:male,female,other',
             'phone' => 'sometimes|string|max:20',
+            'date_of_birth' => 'sometimes|date',
             'age' => 'sometimes|integer|min:1|max:120',
             'address' => 'sometimes|string|max:500',
             'emergency_contact_number' => 'sometimes|string|max:20',
@@ -100,6 +101,11 @@ class ProfileController extends Controller
                 $user->basic_medical_history = $request->basic_medical_history;
             }
 
+            if ($request->has('date_of_birth')) {
+                // If DOB is updated, also recalculate age
+                $user->age = \Carbon\Carbon::parse($request->date_of_birth)->age;
+            }
+
             $user->save();
 
             // Find and update corresponding patient record
@@ -137,6 +143,10 @@ class ProfileController extends Controller
                 
                 if ($request->has('basic_medical_history')) {
                     $patient->medical_history = $request->basic_medical_history;
+                }
+
+                if ($request->has('date_of_birth')) {
+                    $patient->date_of_birth = $request->date_of_birth;
                 }
                 
                 $patient->save();
@@ -183,6 +193,8 @@ class ProfileController extends Controller
                 'profile_picture' =>$user->profile_picture,
                 'user_type' => $user->user_type,
                 'status' => $user->status,
+                'patient_id' => $user->patient?->patient_id,
+                'date_of_birth' => $user->patient?->date_of_birth,
             ];
 
             return response()->json([

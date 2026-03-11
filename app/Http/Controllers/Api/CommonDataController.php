@@ -405,4 +405,21 @@ class CommonDataController extends Controller
             ], 500);
         }
     }
+
+    public function checkAppVersion()
+    {
+        $latestVersion = \App\Models\SystemSetting::where('key', 'latest_app_version')->first()->value ?? '1.0.0';
+        $updateUrl = \App\Models\SystemSetting::where('key', 'play_store_url')->first()->value ?? 'https://play.google.com/store/apps/details?id=com.bhardwaj.hospital';
+        $updateMessage = \App\Models\SystemSetting::where('key', 'app_update_message')->first()->value ?? 'A new version of the app is available with latest features and improvements. Please update for a better experience.';
+
+        return response()->json([
+            'status' => true,
+            'message' => 'App version info retrieved',
+            'data' => [
+                'latest_version' => $latestVersion,
+                'update_url' => $updateUrl,
+                'update_message' => $updateMessage
+            ]
+        ]);
+    }
 }

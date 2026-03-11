@@ -100,6 +100,7 @@ Route::middleware('api_auth')->prefix('chat')->group(function () {
 // Notifications API for patients (or any authenticated user)
 Route::middleware('auth:api')->group(function () {
     Route::get('/notifications', [\App\Http\Controllers\Api\NotificationController::class, 'index']);
+    Route::get('/notifications/unread-count', [\App\Http\Controllers\Api\NotificationController::class, 'unreadCount']);
     Route::post('/notifications/{id}/mark-read', [\App\Http\Controllers\Api\NotificationController::class, 'markRead']);
     Route::post('/notifications/mark-all-read', [\App\Http\Controllers\Api\NotificationController::class, 'markAllRead']);
 });
@@ -134,8 +135,9 @@ Route::prefix('medical-reports')->group(function () {
     Route::get('/health-tips', [CommonDataController::class, 'getHealthTips']);
      Route::get('/health-tips-search', [CommonDataController::class, 'searchHealthTips']);
     Route::get('/banners', [CommonDataController::class, 'getBanners']);
-    Route::get('/notifications', [CommonDataController::class, 'getNotifications']);
+    // Route::get('/notifications', [CommonDataController::class, 'getNotifications']);
     Route::get('/prescriptions', [CommonDataController::class, 'getPrescriptions']);
+    Route::get('/app-version', [CommonDataController::class, 'checkAppVersion']); // New App version check route
 
 
     // POST endpoints with filters/parameters

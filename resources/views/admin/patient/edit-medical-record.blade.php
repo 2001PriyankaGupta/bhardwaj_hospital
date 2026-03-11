@@ -28,24 +28,39 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="record_title">Record Title *</label>
-                                    <input type="text" class="form-control" id="record_title" name="report_title"
+                                    <label for="record_title">Record Title <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control @error('report_title') is-invalid @enderror" id="record_title" name="report_title"
                                         value="{{ old('report_title', $record->report_title) }}" required>
+                                    @error('report_title')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="report_type">Report Type *</label>
-                                    <input type="text" class="form-control" id="report_type" name="report_type"
+                                    <label for="report_type">Report Type <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control @error('report_type') is-invalid @enderror" id="report_type" name="report_type"
                                         value="{{ old('report_type', $record->report_type) }}" required>
+                                    @error('report_type')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="record_date">Record Date *</label>
-                                    <input type="date" class="form-control" id="record_date" name="record_date"
+                                    <label for="record_date">Record Date <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control @error('record_date') is-invalid @enderror" id="record_date" name="record_date"
                                         value="{{ old('record_date', \Carbon\Carbon::parse($record->record_date)->format('Y-m-d')) }}"
                                         required>
+                                    @error('record_date')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
                                 </div>
                             </div>
                         </div>
@@ -54,8 +69,13 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="report_file">Upload Report</label>
-                                    <input type="file" class="form-control" id="report_file" name="report_file"
+                                    <input type="file" class="form-control @error('report_file') is-invalid @enderror" id="report_file" name="report_file"
                                         accept="image/*,application/pdf" onchange="previewFile()">
+                                    @error('report_file')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
                                     <small class="text-muted">Only image and PDF files are allowed. Maximum size:
                                         2MB.</small>
                                 </div>

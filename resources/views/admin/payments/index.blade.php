@@ -1,4 +1,6 @@
 @extends('admin.layouts.master')
+
+@push('styles')
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.bootstrap4.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
@@ -61,6 +63,7 @@
         border-bottom: 1px solid rgba(0, 0, 0, .125);
     }
 </style>
+@endpush
 
 @section('content')
     <div class="container-fluid mt-4">
@@ -116,7 +119,7 @@
                             <div class="col-lg-3 col-6">
                                 <div class="small-box bg-info">
                                     <div class="inner">
-                                        <h3>${{ number_format($payments->where('status', 'successful')->sum('amount'), 2) }}
+                                        <h3>₹{{ number_format($payments->where('status', 'successful')->sum('amount'), 2) }}
                                         </h3>
                                         <p>Total Successful Payments</p>
                                     </div>
@@ -217,7 +220,7 @@
                                             </td>
                                             <td>
                                                 <div class="payment-info">
-                                                    <h5 class="mb-1">${{ number_format($payment->amount, 2) }}</h5>
+                                                    <h5 class="mb-1">₹{{ number_format($payment->amount, 2) }}</h5>
                                                     <div class="small text-muted">
                                                         <div>Method: <span
                                                                 class="badge bg-info">{{ $payment->payment_method ?? 'Credit Card' }}</span>
@@ -264,6 +267,10 @@
                                                             <i class="fas fa-check"></i>
                                                         </button>
                                                     @endif
+                                                    <button type="button" class="btn btn-danger btn-sm delete-payment"
+                                                        data-id="{{ $payment->id }}" title="Delete Payment">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -313,6 +320,7 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
 
@@ -406,7 +414,8 @@
             });
 
             // View payment details
-            $('.view-payment').on('click', function(e) {
+            $(document).on('click', '.view-payment', function(e) {
+                e.preventDefault();
                 e.stopPropagation();
                 var paymentId = $(this).data('id');
                 fetchPaymentDetails(paymentId);
@@ -414,13 +423,15 @@
 
             // Mark as paid from list
             $(document).on('click', '.btn-mark-paid', function(e) {
+                e.preventDefault();
                 e.stopPropagation();
                 var id = $(this).data('id');
                 markAsPaid(id);
             });
 
             // Mark as paid from modal
-            $(document).on('click', '#modalMarkPaidBtn', function() {
+            $(document).on('click', '#modalMarkPaidBtn', function(e) {
+                e.preventDefault();
                 var id = $(this).data('id');
                 markAsPaid(id, true);
             });
@@ -428,6 +439,14 @@
             // Prevent row click when action button clicked
             $('#paymentsTable tbody').on('click', '.btn-group button', function(e) {
                 e.stopPropagation();
+            });
+
+            // Delete payment
+            $(document).on('click', '.delete-payment', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var paymentId = $(this).data('id');
+                deletePayment(paymentId);
             });
 
             // Make table rows clickable (single handler)
@@ -465,14 +484,15 @@
                         // attach mark-as-paid handler inside modal (button has id modalMarkPaidBtn)
                     } else {
                         $modal.modal('hide');
-                        alert(res.message || 'Unable to fetch payment details');
+                        Swal.fire('Error!', res.message || 'Unable to fetch payment details', 'error');
                     }
                 },
                 error: function(xhr) {
                     $modal.modal('hide');
                     if (xhr.status === 401 || xhr.status === 419) {
-                        alert('Your session has expired. Please login again.');
-                        window.location = '{{ url('/login') }}';
+                        Swal.fire('Session Expired', 'Your session has expired. Please login again.', 'warning').then(() => {
+                            window.location = '{{ url('/login') }}';
+                        });
                         return;
                     }
                     var msg = 'Failed to fetch payment details';
@@ -480,51 +500,106 @@
                         var json = JSON.parse(xhr.responseText);
                         if (json.message) msg = json.message;
                     } catch (e) {}
-                    alert(msg);
+                    Swal.fire('Error!', msg, 'error');
                 }
             });
         }
 
         function printReceipt(paymentId) {
-            alert('Printing receipt for payment #' + paymentId);
+            Swal.fire('Info', 'Printing receipt for payment #' + paymentId, 'info');
             // In real implementation, this would generate/print a receipt
             // window.open('/admin/payments/' + paymentId + '/receipt', '_blank');
         }
 
         function markAsPaid(paymentId, fromModal = false) {
-            if (!confirm('Are you sure you want to mark payment #' + paymentId + ' as paid?')) return;
+            Swal.fire({
+                title: 'Mark as Paid?',
+                text: 'Are you sure you want to mark payment #' + paymentId + ' as paid?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, mark it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajaxSetup({
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
 
-            $.ajaxSetup({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                    'X-Requested-With': 'XMLHttpRequest'
+                    var url = '{{ url('admin/payments') }}/' + paymentId + '/mark-paid';
+
+                    $.post(url, {}, function(res) {
+                        if (res && res.success) {
+                            Swal.fire('Updated!', res.message || 'Payment updated', 'success').then(() => {
+                                if (fromModal) $('#paymentDetailsModal').modal('hide');
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error!', res.message || 'Failed to update payment', 'error');
+                        }
+                    }).fail(function(xhr) {
+                        if (xhr.status === 401 || xhr.status === 419) {
+                            Swal.fire('Session Expired', 'Your session has expired. Please login again.', 'warning').then(() => {
+                                window.location = '{{ url('/login') }}';
+                            });
+                            return;
+                        }
+                        var msg = 'Failed to update payment';
+                        try {
+                            var json = JSON.parse(xhr.responseText);
+                            if (json.message) msg = json.message;
+                        } catch (e) {}
+                        Swal.fire('Error!', msg, 'error');
+                    });
                 }
             });
+        }
 
-            var url = '{{ url('admin/payments') }}/' + paymentId + '/mark-paid';
+        function deletePayment(paymentId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajaxSetup({
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
 
-            $.post(url, {}, function(res) {
-                if (res && res.success) {
-                    alert(res.message || 'Payment updated');
-                    // Close modal if open and reload page to reflect changes
-                    if (fromModal) $('#paymentDetailsModal').modal('hide');
-                    // Simple approach: reload the page to refresh table and counts
-                    location.reload();
-                } else {
-                    alert(res.message || 'Failed to update payment');
+                    var url = '{{ url('admin/payments') }}/' + paymentId;
+
+                    $.ajax({
+                        url: url,
+                        method: 'DELETE',
+                        success: function(res) {
+                            if (res && res.success) {
+                                Swal.fire('Deleted!', res.message || 'Payment deleted successfully', 'success').then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Error!', res.message || 'Failed to delete payment', 'error');
+                            }
+                        },
+                        error: function(xhr) {
+                            var msg = 'Failed to delete payment';
+                            try {
+                                var json = JSON.parse(xhr.responseText);
+                                if (json.message) msg = json.message;
+                            } catch (e) {}
+                            Swal.fire('Error!', msg, 'error');
+                        }
+                    });
                 }
-            }).fail(function(xhr) {
-                if (xhr.status === 401 || xhr.status === 419) {
-                    alert('Your session has expired. Please login again.');
-                    window.location = '{{ url('/login') }}';
-                    return;
-                }
-                var msg = 'Failed to update payment';
-                try {
-                    var json = JSON.parse(xhr.responseText);
-                    if (json.message) msg = json.message;
-                } catch (e) {}
-                alert(msg);
             });
         }
 

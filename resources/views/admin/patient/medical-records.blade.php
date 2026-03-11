@@ -66,36 +66,53 @@
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label for="record_title">Record Title </label>
-
-                                                    <input type="text" class="form-control" id="record_title"
-                                                        name="report_title" placeholder="example - Blood Test, X-Ray etc.">
+                                                    <label for="record_title">Record Title <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control @error('report_title') is-invalid @enderror" id="record_title"
+                                                        name="report_title" value="{{ old('report_title') }}" placeholder="example - Blood Test, X-Ray etc.">
+                                                    @error('report_title')
+                                                        <span class="invalid-feedback" role="alert">
+                                                            <strong>{{ $message }}</strong>
+                                                        </span>
+                                                    @enderror
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label for="record_type">Report Type </label>
-
-                                                    <input type="text" class="form-control" id="report_type"
-                                                        name="report_type"
+                                                    <label for="record_type">Report Type <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control @error('report_type') is-invalid @enderror" id="report_type"
+                                                        name="report_type" value="{{ old('report_type') }}"
                                                         placeholder="example - Diagnosis, Prescription, Lab Report etc.">
-
+                                                    @error('report_type')
+                                                        <span class="invalid-feedback" role="alert">
+                                                            <strong>{{ $message }}</strong>
+                                                        </span>
+                                                    @enderror
                                                     <input type="hidden" name="patient_id" value="{{ $patient->id }}">
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label for="record_date">Record Date *</label>
-                                                    <input type="date" class="form-control" id="record_date"
-                                                        name="record_date" required value="{{ date('Y-m-d') }}">
+                                                    <label for="record_date">Record Date <span class="text-danger">*</span></label>
+                                                    <input type="date" class="form-control @error('record_date') is-invalid @enderror" id="record_date"
+                                                        name="record_date" required value="{{ old('record_date', date('Y-m-d')) }}">
+                                                    @error('record_date')
+                                                        <span class="invalid-feedback" role="alert">
+                                                            <strong>{{ $message }}</strong>
+                                                        </span>
+                                                    @enderror
                                                 </div>
                                             </div>
                                             <div class="col-md-6 mt-3">
                                                 <div class="form-group">
-                                                    <label for="report_file">Upload Report</label>
-                                                    <input type="file" class="form-control" id="report_file"
+                                                    <label for="report_file">Upload Report <span class="text-danger">*</span></label>
+                                                    <input type="file" class="form-control @error('report_file') is-invalid @enderror" id="report_file"
                                                         name="report_file" accept="image/*,application/pdf"
                                                         onchange="validateFileSize(this)">
+                                                    @error('report_file')
+                                                        <span class="invalid-feedback" role="alert">
+                                                            <strong>{{ $message }}</strong>
+                                                        </span>
+                                                    @enderror
                                                     <small class="text-muted">Only image and PDF files are allowed. Maximum
                                                         size: 2MB.</small>
 
