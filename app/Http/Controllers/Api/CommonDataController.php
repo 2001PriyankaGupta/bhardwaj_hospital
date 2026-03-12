@@ -371,7 +371,12 @@ class CommonDataController extends Controller
                         'name' => $prescription->doctor->first_name . ' ' . $prescription->doctor->last_name,
                         'specialization' => $prescription->doctor->specialization,
                     ] : null,
-                    
+                    'patient' => $prescription->patient ? [
+                        'name' => $prescription->patient->name,
+                        'gender' => $prescription->patient->gender,
+                        'age' => $prescription->patient->age,
+                        'phone' => $prescription->patient->phone,
+                    ] : null,
                 ];
             });
 

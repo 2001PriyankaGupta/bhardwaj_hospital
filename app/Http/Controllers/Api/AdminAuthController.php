@@ -34,13 +34,18 @@ class AdminAuthController extends Controller
                 'alternate_contact_number' => 'nullable|string|min:10|max:15',
                 'basic_medical_history' => 'nullable|string',
                 'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ], [
+                'email.unique' => 'this email is allready exist'
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation Errors during Registration: ', $e->errors());
+
             $firstError = collect($e->errors())->first()[0];
             return response()->json([
                 'status' => 'false',
                 'message' => 'Validation failed',
-                'error' => $firstError
+                'error' => $firstError,
+                'errors' => $e->errors()
             ], 422);
         }
 
